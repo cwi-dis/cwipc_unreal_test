@@ -6,24 +6,31 @@
 #include "CoreGlobals.h"
 
 
+
+UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+#if 0
+	Proxy.Reset(new FNDIMousePositionProxy());
+#endif
+}
+
 void UCwipcNiagaraDataInterface::PostInitProperties()
 {
 	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostInitProperties: called"));
 	Super::PostInitProperties();
-#if 0
 	if (HasAnyFlags(RF_ClassDefaultObject))
 	{
-		ENiagaraTypeRegistryFlags RegistryFlags = ENiagaraTypeRegistryFlags::AllowUserVariable
-			| ENiagaraTypeRegistryFlags::AllowSystemVariable
-			| ENiagaraTypeRegistryFlags::AllowEmitterVariable
+		ENiagaraTypeRegistryFlags RegistryFlags = ENiagaraTypeRegistryFlags::AllowAnyVariable
 			| ENiagaraTypeRegistryFlags::AllowParameter;
 
 		FNiagaraTypeRegistry::Register(FNiagaraTypeDefinition(GetClass()), RegistryFlags);
-
+#if 0
 		RegistryFlags |= ENiagaraTypeRegistryFlags::AllowPayload;
 		FNiagaraTypeRegistry::Register(FHoudiniEvent::StaticStruct(), RegistryFlags);
-	}
 #endif
+	}
+
 }
 
 void UCwipcNiagaraDataInterface::PostLoad()

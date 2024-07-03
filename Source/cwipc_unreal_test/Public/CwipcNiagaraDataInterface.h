@@ -12,13 +12,17 @@
 UCLASS(EditInlineNew, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Info"))
 class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInterface
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
+	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
+	SHADER_PARAMETER(FVector4f, DummyTestMousePosition)
+	END_SHADER_PARAMETER_STRUCT()
 
 public:
 	//----------------------------------------------------------------------------
 	// UObject Interface
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override;
+	virtual bool CanExecuteOnTarget(ENiagaraSimTarget Target) const override { return true; }
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
