@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(EditInlineNew, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Info"))
 class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInterface
 {
 	GENERATED_BODY()
