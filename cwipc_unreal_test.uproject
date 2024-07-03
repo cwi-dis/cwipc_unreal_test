@@ -7,7 +7,10 @@
 		{
 			"Name": "cwipc_unreal_test",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Niagara"
+			]
 		}
 	],
 	"Plugins": [
