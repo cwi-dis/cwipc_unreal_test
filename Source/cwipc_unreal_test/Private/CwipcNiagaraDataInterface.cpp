@@ -6,11 +6,12 @@
 #include "cwipc_util/api.h"
 #include "CoreGlobals.h"
 
-
+#define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
 
 UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	source = nullptr;
 #if 0
 	Proxy.Reset(new FNDIMousePositionProxy());
 #endif
@@ -41,6 +42,10 @@ void UCwipcNiagaraDataInterface::PostLoad()
 {
 	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: called"));
 	Super::PostLoad();
+	source = cwipc_synthetic(15, 100, nullptr, CWIPC_API_VERSION);
+	if (source == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: cwipc_synthetic failed"));
+	}
 #if 0
 	MarkRenderDataDirty();
 #endif
@@ -65,19 +70,48 @@ void UCwipcNiagaraDataInterface::PostEditChangeProperty(struct FPropertyChangedE
 
 #endif // WITH_EDITOR
 
+// This ticks on the game thread and lets us do work to initialize the instance data.
+// If you need to do work on the gathered instance data after the simulation is done, use PerInstanceTickPostSimulate() instead. 
+bool UCwipcNiagaraDataInterface::PerInstanceTick(void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds)
+{
+	UE_LOG(LogTemp, Display, TEXT("xxxjack UCwipcNiagaraDataInterface::PerInstanceTick: called"));
+	check(SystemInstance);
+#if 0
+	FNDIMousePositionInstanceData* InstanceData = static_cast<FNDIMousePositionInstanceData*>(PerInstanceData);
+
+
+	if (!InstanceData)
+	{
+		return true;
+	}
+#endif
+	if (source == nullptr) {
+		return true;
+	}
+	if (!source->available(false)) {
+		return true;
+	}
+	if (pc!=nullptr) {
+		cwipc_free(pc);
+		pc = nullptr;
+	}
+	pc = source->get();
+	UE_LOG(LogTemp, Display, TEXT("xxxjack UCwipcNiagaraDataInterface::PerInstanceTick: got pointcloud with %d points"), pc->count());
+	return false;
+}
 
 // Returns the signature of all the functions avaialable in the data interface
 void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>& OutFunctions)
 {
 #if 0
 	{
-		// GetFloatValue
+		// GetCoordinateValue
 		FNiagaraFunctionSignature Sig;
-		Sig.Name = GetFloatValueName;
+		Sig.Name = GetCoordinateValueName;
 		Sig.bMemberFunction = true;
 		Sig.bRequiresContext = false;
-		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCache")));		// PointCache in
-		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("SampleIndex")));		// SampleIndex In
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("Cwipc_Point")));		// PointCloud in
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("x coordinate")));		// SampleIndex In
 		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("AttributeIndex")));	// AttributeIndex In
 		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("Value")));    	// Float Out
 

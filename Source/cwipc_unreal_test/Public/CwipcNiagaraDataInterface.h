@@ -6,9 +6,66 @@
 #include "NiagaraDataInterface.h"
 #include "CwipcNiagaraDataInterface.generated.h"
 
+class cwipc_source;
+class cwipc;
+
 /**
  * 
  */
+USTRUCT()
+struct FCwipcEvent
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
+	float x;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
+	float y;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
+	float z;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
+	int8 r;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
+	int8 g;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
+	int8 b;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
+	int8 tile;
+
+	FCwipcEvent()
+	{
+		x = 0.0f;
+		y = 0.0f;
+		z = 0.0f;
+		r = 0;
+		g = 0;
+		b = 0;
+		tile = 0;
+	}
+
+	inline bool operator==(const FCwipcEvent& Other) const
+	{
+		if ((Other.x != x) || (Other.y != y)
+			|| (Other.z != z) || (Other.r != r)
+			|| (Other.g != g) || (Other.b != b)
+			|| (Other.tile != tile))
+			return false;
+
+		return true;
+	}
+
+	inline bool operator!=(const FCwipcEvent& Other) const
+	{
+		return !(*this == Other);
+	}
+};
+
 UCLASS(EditInlineNew, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Info"))
 class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInterface
 {
@@ -16,6 +73,10 @@ class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInte
 	BEGIN_SHADER_PARAMETER_STRUCT(FShaderParameters, )
 	SHADER_PARAMETER(FVector4f, DummyTestMousePosition)
 	END_SHADER_PARAMETER_STRUCT()
+
+protected:
+	cwipc_source* source;
+	cwipc* pc;
 
 public:
 	//----------------------------------------------------------------------------
@@ -37,4 +98,11 @@ public:
 
 	virtual bool Equals(const UNiagaraDataInterface* Other) const override;
 
+	virtual bool PerInstanceTick(void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds) override;
+
+	//----------------------------------------------------------------------------
+	// EXPOSED FUNCTIONS
+
+	// Returns the float value at a given sample index in the point cloud
+	void GetFloatValue(FVectorVMExternalFunctionContext& Context);
 };
