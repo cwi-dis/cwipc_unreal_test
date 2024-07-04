@@ -3,6 +3,7 @@
 
 #include "CwipcNiagaraDataInterface.h"
 
+#include "cwipc_util/api.h"
 #include "CoreGlobals.h"
 
 
@@ -18,6 +19,9 @@ UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const&
 void UCwipcNiagaraDataInterface::PostInitProperties()
 {
 	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostInitProperties: called"));
+	UE_LOG(LogTemp, Warning, TEXT("xxxjack Cwipc,compiler version = 0x%x "), CWIPC_API_VERSION);
+	FString runtimeVersion = cwipc_get_version();
+	UE_LOG(LogTemp, Warning, TEXT("xxxjack Cwipc,runtime version = %s "), *runtimeVersion);
 	Super::PostInitProperties();
 	if (HasAnyFlags(RF_ClassDefaultObject))
 	{
