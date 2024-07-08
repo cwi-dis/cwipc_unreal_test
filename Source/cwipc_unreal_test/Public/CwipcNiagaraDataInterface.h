@@ -8,6 +8,7 @@
 
 class cwipc_source;
 class cwipc;
+struct cwipc_point;
 
 /**
  * 
@@ -77,6 +78,8 @@ class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInte
 protected:
 	cwipc_source* source;
 	cwipc* pc;
+	cwipc_point *pc_points;
+	int pc_count;
 
 public:
 	//----------------------------------------------------------------------------

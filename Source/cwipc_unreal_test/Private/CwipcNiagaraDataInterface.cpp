@@ -95,8 +95,24 @@ bool UCwipcNiagaraDataInterface::PerInstanceTick(void* PerInstanceData, FNiagara
 		cwipc_free(pc);
 		pc = nullptr;
 	}
+	if (pc_points != nullptr) {
+		free(pc_points);
+	}
 	pc = source->get();
 	UE_LOG(LogTemp, Display, TEXT("xxxjack UCwipcNiagaraDataInterface::PerInstanceTick: got pointcloud with %d points"), pc->count());
+	if (pc == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("xxxjack available returned true but no point cloud available"));
+		return true;
+	}
+	pc_count = pc->count();
+	size_t byte_count = pc->get_uncompressed_size();
+	pc_points = (cwipc_point *)malloc(byte_count);
+	size_t copied_count = pc->copy_uncompressed(pc_points, byte_count);
+	if (byte_count != copied_count) {
+		UE_LOG(LogTemp, Error, TEXT("xxxjack copy_uncompressed copied wrong number of bytes"));
+		return true;
+	}
+
 	return false;
 }
 
