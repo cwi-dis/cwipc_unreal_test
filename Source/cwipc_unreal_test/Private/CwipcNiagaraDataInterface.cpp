@@ -8,10 +8,13 @@
 
 #define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
 
+static const FName GetNumberOfPointsName("GetNumberOfPoints");
+
 UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	source = nullptr;
+	PointCloudObject = nullptr;
 #if 0
 	Proxy.Reset(new FNDIMousePositionProxy());
 #endif
@@ -42,14 +45,22 @@ void UCwipcNiagaraDataInterface::PostLoad()
 {
 	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: called"));
 	Super::PostLoad();
+	if (source != nullptr) {
+		free(source); // Free existing source before creating a new one
+	}
 	source = cwipc_synthetic(15, 100, nullptr, CWIPC_API_VERSION);
+
 	if (source == nullptr) {
 		UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: cwipc_synthetic failed"));
 	}
-#if 0
-	MarkRenderDataDirty();
-#endif
-}
+	else {
+		PointCloudObject = NewObject<UCwipcSource>();
+		UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: created PointCloudObject"));
+	}
+    #if 0
+        MarkRenderDataDirty();
+    #endif
+    }
 
 #if WITH_EDITOR
 
@@ -119,24 +130,22 @@ bool UCwipcNiagaraDataInterface::PerInstanceTick(void* PerInstanceData, FNiagara
 // Returns the signature of all the functions avaialable in the data interface
 void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>& OutFunctions)
 {
-#if 0
+
 	{
-		// GetCoordinateValue
+		// GetNumberofPoints
 		FNiagaraFunctionSignature Sig;
-		Sig.Name = GetCoordinateValueName;
+		Sig.Name = GetNumberOfPointsName;
 		Sig.bMemberFunction = true;
 		Sig.bRequiresContext = false;
-		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("Cwipc_Point")));		// PointCloud in
-		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("x coordinate")));		// SampleIndex In
-		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("AttributeIndex")));	// AttributeIndex In
-		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("Value")));    	// Float Out
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCache in
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Value")));    	// Number of points Out
 
-		Sig.SetDescription(LOCTEXT("DataInterfaceHoudini_GetFloatValue",
-			"Returns the float value in the point cache for a given Sample Index and Attribute Index.\n"));
+		Sig.SetDescription(LOCTEXT("CwipcDataInterface_GetNumberOfPoints",
+			"Returns the number of points in the point cloud"));
 
 		OutFunctions.Add(Sig);
 	}
-
+#if 0
 	{
 		// GetFloatValueByString
 		FNiagaraFunctionSignature Sig;
@@ -884,16 +893,17 @@ void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>&
 
 void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunctionBindingInfo& BindingInfo, void* InstanceData, FVMExternalFunction& OutFunc)
 {
-#if 0
+
 	static const FName NAME_Attribute("Attribute");
 
 	const FVMFunctionSpecifier* AttributeSpecifier = BindingInfo.FindSpecifier(NAME_Attribute);
 	bool bAttributeSpecifierRequiredButNotFound = false;
 
-	if (BindingInfo.Name == GetFloatValueName && BindingInfo.GetNumInputs() == 2 && BindingInfo.GetNumOutputs() == 1)
+	if (BindingInfo.Name == GetNumberOfPointsName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
 	{
-		NDI_FUNC_BINDER(UNiagaraDataInterfaceHoudini, GetFloatValue)::Bind(this, OutFunc);
+		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetNumberOfPoints);
 	}
+#if 0
 	else if (BindingInfo.Name == GetFloatValueByStringName && BindingInfo.GetNumInputs() == 1 && BindingInfo.GetNumOutputs() == 1)
 	{
 		if (AttributeSpecifier)
@@ -1169,3 +1179,9 @@ bool UCwipcNiagaraDataInterface::Equals(const UNiagaraDataInterface* Other) cons
 	return false;
 }
 
+void UCwipcNiagaraDataInterface::GetNumberOfPoints(FVectorVMExternalFunctionContext& Context)
+{
+	VectorVM::FExternalFuncRegisterHandler<int32> OutNumPoints(Context);
+	*OutNumPoints.GetDest() = PointCloudObject ? PointCloudObject->GetNumberOfPoints() : 0;
+	OutNumPoints.Advance();
+}

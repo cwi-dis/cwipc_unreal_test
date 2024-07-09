@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "NiagaraDataInterface.h"
+#include "CwipcSource.h"
 #include "CwipcNiagaraDataInterface.generated.h"
 
 class cwipc_source;
@@ -75,13 +76,17 @@ class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInte
 	SHADER_PARAMETER(FVector4f, DummyTestMousePosition)
 	END_SHADER_PARAMETER_STRUCT()
 
+	FORCEINLINE int32 GetNumberOfPoints()const { return PointCloudObject ? PointCloudObject->GetNumberOfPoints() : 0; }
+
 protected:
 	cwipc_source* source;
 	cwipc* pc;
 	cwipc_point *pc_points;
 	int pc_count;
+	UCwipcSource* PointCloudObject;
 
 public:
+
 	//----------------------------------------------------------------------------
 	// UObject Interface
 	virtual void PostInitProperties() override;
@@ -107,5 +112,5 @@ public:
 	// EXPOSED FUNCTIONS
 
 	// Returns the float value at a given sample index in the point cloud
-	void GetFloatValue(FVectorVMExternalFunctionContext& Context);
+	void GetNumberOfPoints(FVectorVMExternalFunctionContext& Context);
 };
