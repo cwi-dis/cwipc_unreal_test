@@ -68,7 +68,7 @@ struct FCwipcEvent
 	}
 };
 
-UCLASS(EditInlineNew, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Info"))
+UCLASS(EditInlineNew, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Niagara Data Interface"))
 class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInterface
 {
 	GENERATED_UCLASS_BODY()
@@ -76,17 +76,17 @@ class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInte
 	SHADER_PARAMETER(FVector4f, DummyTestMousePosition)
 	END_SHADER_PARAMETER_STRUCT()
 
-	FORCEINLINE int32 GetNumberOfPoints()const { return PointCloudObject ? PointCloudObject->GetNumberOfPoints() : 0; }
+
+	FORCEINLINE int32 GetNumberOfPoints()const { return CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetNumberOfPoints() : 0; }
+
 
 protected:
-	cwipc_source* source;
-	cwipc* pc;
-	cwipc_point *pc_points;
-	int pc_count;
-	UCwipcSource* PointCloudObject;
+	virtual bool CopyToInternal(UNiagaraDataInterface* Destination) const override;
 
 public:
 
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Source Asset"))
+	TObjectPtr<UCwipcSource> CwipcPointCloudSourceAsset;
 	//----------------------------------------------------------------------------
 	// UObject Interface
 	virtual void PostInitProperties() override;
@@ -105,8 +105,6 @@ public:
 	virtual void GetVMExternalFunction(const FVMExternalFunctionBindingInfo& BindingInfo, void* InstanceData, FVMExternalFunction& OutFunc) override;
 
 	virtual bool Equals(const UNiagaraDataInterface* Other) const override;
-
-	virtual bool PerInstanceTick(void* PerInstanceData, FNiagaraSystemInstance* SystemInstance, float DeltaSeconds) override;
 
 	//----------------------------------------------------------------------------
 	// EXPOSED FUNCTIONS

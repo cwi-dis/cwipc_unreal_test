@@ -24,7 +24,7 @@ struct FPcIndexes
 /**
  * 
  */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Source"))
 class CWIPC_UNREAL_TEST_API UCwipcSource : public UObject
 {
 	friend class UCwipcNiagaraDataInterface;
@@ -36,18 +36,16 @@ protected:
 	cwipc* pc;
 	cwipc_point* pc_points;
 	int pc_count;
+	void _initialize();
 
 public:
 
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Cwipc Data")
+	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get number of points from current point cloud"))
 	int32 GetNumberOfPoints();
 
-	// The number of points found in the point cloud
-	UPROPERTY(VisibleAnywhere, Category = "Cwipc Data")
-	int32 NumberOfPoints;
 
 	// Sample indexes for each point
 

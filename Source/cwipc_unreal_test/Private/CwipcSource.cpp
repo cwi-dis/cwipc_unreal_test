@@ -4,20 +4,39 @@
 #include "CwipcSource.h"
 
 UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-	pc = nullptr;
-	pc_points = nullptr;
-	pc_count = 0;
+	: Super(ObjectInitializer),
+      source(nullptr),
+      pc(nullptr),  
+      pc_points(nullptr), 
+      pc_count(0)
 
-	UE_LOG(LogTemp, Warning, TEXT("xxxJack UcwipcSource has been initialized"));
+{
+	UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwipcSource constructor 0x%x"),(uint64) this);
+}
+
+void UCwipcSource::_initialize()
+{
+    source = cwipc_synthetic(15, 100, nullptr, CWIPC_API_VERSION);
+    if (source == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwpicSource: cwipc_synthetic returned null"));
+    }
+    pc = nullptr;
+    pc_points = nullptr;
+    pc_count = 0;
+
+    UE_LOG(LogTemp, Warning, TEXT("xxxJack UcwipcSource has been initialized"));
 }
 
 int32 UCwipcSource::GetNumberOfPoints()
 {
-    UE_LOG(LogTemp, Warning, TEXT("xxxJack GetNumberOfPoints is called"));
-    source = (cwipc_source*)malloc(sizeof(cwipc_source));
-    source = cwipc_synthetic(15, 100, nullptr, CWIPC_API_VERSION);
+    UE_LOG(LogTemp, Warning, TEXT("xxxJack GetNumberOfPoints is called on 0x%x"),(uint64) this);
+    if (source == nullptr) {
+        _initialize();
+    }
+    if (source == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwpicSource::GetNumberOfPoints: source is null"));
+        return 0;
+    }
     pc = source->get();
     if (pc == nullptr) {
         UE_LOG(LogTemp, Error, TEXT("xxxjack available returned true but no point cloud available"));
