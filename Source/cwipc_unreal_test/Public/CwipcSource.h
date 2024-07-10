@@ -35,7 +35,7 @@ protected:
 	cwipc_source* source;
 	cwipc* pc;
 	cwipc_point* pc_points;
-	int pc_count;
+	
 	void _initialize();
 
 public:
@@ -46,7 +46,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get number of points from current point cloud"))
 	int32 GetNumberOfPoints();
 
+	UPROPERTY(VisibleAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Number of points in current point cloud"))
+	int pc_count;
 
+	UPROPERTY(VisibleAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Timestamp of current point cloud"))
+	int pc_timestamp;
 	// Sample indexes for each point
 
 	UPROPERTY()
