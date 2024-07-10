@@ -64,6 +64,19 @@ int32 UCwipcSource::GetNumberOfPoints()
     return pc_count;
 }
 
+cwipc_point* UCwipcSource::GetPoint(int32 index) const
+{
+    if (pc_points == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::GetPoint: pc_points is null"));
+		return nullptr;
+	}
+    if (index < 0 || index >= pc_count) {
+		UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::GetPoint: index out of range"));
+		return nullptr;
+	}
+    return &pc_points[index];
+}
+
 void UCwipcSource::PostInitProperties()
 {
 	Super::PostInitProperties();

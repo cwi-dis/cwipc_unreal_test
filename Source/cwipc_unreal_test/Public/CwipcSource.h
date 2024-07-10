@@ -55,5 +55,7 @@ public:
 
 	UPROPERTY()
 	TArray< FPcIndexes > PointValueIndexes;
+
+	cwipc_point * GetPoint(int32 index) const;
 	
 };
