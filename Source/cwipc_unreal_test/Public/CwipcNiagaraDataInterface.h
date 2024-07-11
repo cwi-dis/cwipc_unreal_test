@@ -115,4 +115,6 @@ public:
 	void GetColor(FVectorVMExternalFunctionContext& Context);
 
 	void GetPosition(FVectorVMExternalFunctionContext& Context);
+
+	void GetPointIDsToSpawnAtTime(FVectorVMExternalFunctionContext& Context);
 };

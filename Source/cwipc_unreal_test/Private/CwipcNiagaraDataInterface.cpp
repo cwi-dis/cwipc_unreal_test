@@ -237,3 +237,7 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 	OutSampleY.Advance();
 	OutSampleZ.Advance();
 }
+
+void UCwipcNiagaraDataInterface::GetPointIDsToSpawnAtTime(FVectorVMExternalFunctionContext& Context)
+{
+}
