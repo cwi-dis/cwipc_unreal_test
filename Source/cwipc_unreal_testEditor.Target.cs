@@ -10,6 +10,6 @@ public class cwipc_unreal_testEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V4;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
-		ExtraModuleNames.Add("cwipc_unreal_test");
+		ExtraModuleNames.Add("cwipc_unreal_testEditor");
 	}
 }

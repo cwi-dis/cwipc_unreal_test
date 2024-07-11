@@ -11,6 +11,11 @@
 			"AdditionalDependencies": [
 				"Niagara"
 			]
+		},
+		{
+			"Name": "cwipc_unreal_testEditor",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit"
 		}
 	],
 	"Plugins": [

@@ -11,5 +11,13 @@ public class cwipc_unreal_testTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V4;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
 		ExtraModuleNames.Add("cwipc_unreal_test");
+		if (bBuildEditor)
+        {
+            ExtraModuleNames.AddRange( 
+                new string[]
+                {
+                    "cwipc_unreal_testEditor"
+                });
+        }
 	}
 }
