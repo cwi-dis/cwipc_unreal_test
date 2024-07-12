@@ -40,3 +40,9 @@ uint32 UCwipcSourceFactoryNew::GetMenuCategories() const
 {
 	return EAssetTypeCategories::Misc;
 }
+
+FText UCwipcSourceFactoryNew::GetDisplayName() const
+{
+	FString name = FString(TEXT("JackIsGek"));
+	return FText::FromString(name);
+}

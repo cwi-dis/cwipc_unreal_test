@@ -20,4 +20,6 @@ class CWIPC_UNREAL_TESTEDITOR_API UCwipcSourceFactoryNew : public UFactory
 	virtual bool ShouldShowInNewMenu() const override;
 
 	virtual uint32 GetMenuCategories() const override;
+
+	virtual FText GetDisplayName() const override;
 };
