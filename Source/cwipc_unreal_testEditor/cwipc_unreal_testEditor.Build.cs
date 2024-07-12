@@ -3,11 +3,11 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class cwipc_unreal_test : ModuleRules
+public class cwipc_unreal_testEditor : ModuleRules
 {
     const string CWIPC_API_LOCATION = "C:/Program Files/cwipc 7.5.3/";
 
-    public cwipc_unreal_test(ReadOnlyTargetRules Target) : base(Target)
+    public cwipc_unreal_testEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
