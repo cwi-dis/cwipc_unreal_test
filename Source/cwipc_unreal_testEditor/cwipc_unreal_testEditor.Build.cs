@@ -16,19 +16,26 @@ public class cwipc_unreal_testEditor : ModuleRules
         PublicIncludePaths.AddRange(
 			 new string[] {
 				"cwipc_unreal_testEditor/Public",
-				Path.Combine(CWIPC_API_LOCATION, "include"),
-			 });
+                Path.Combine(CWIPC_API_LOCATION, "include"),
+ 			 });
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				"cwipc_unreal_testEditor/Private",
 			});
-        PublicAdditionalLibraries.AddRange(
+        
+		PublicAdditionalLibraries.AddRange(
             new string[] {
                     Path.Combine(CWIPC_API_LOCATION, "lib", "cwipc_util.lib"),
             });
-		PublicDependencyModuleNames.AddRange(
+
+			PublicDependencyModuleNames.AddRange(
 			new string[] {
 				"cwipc_unreal_test",
+			});
+			
+		PrivateDependencyModuleNames.AddRange(
+			new string[] {
+				"UnrealEd"
 			});
     }
 }
