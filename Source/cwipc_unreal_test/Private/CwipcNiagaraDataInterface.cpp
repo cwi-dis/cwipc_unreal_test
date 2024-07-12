@@ -22,7 +22,7 @@ UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const&
 
 void UCwipcNiagaraDataInterface::PostInitProperties()
 {
-	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostInitProperties: called"));
+	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostInitProperties: called, this=0x%x"), (uint64_t)this);
 	UE_LOG(LogTemp, Warning, TEXT("xxxjack Cwipc,compiler version = 0x%x "), CWIPC_API_VERSION);
 	FString runtimeVersion = cwipc_get_version();
 	UE_LOG(LogTemp, Warning, TEXT("xxxjack Cwipc,runtime version = %s "), *runtimeVersion);
@@ -43,11 +43,9 @@ void UCwipcNiagaraDataInterface::PostInitProperties()
 
 void UCwipcNiagaraDataInterface::PostLoad()
 {
-	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: called"));
 	Super::PostLoad();
-	CwipcPointCloudSourceAsset = NewObject<UCwipcSource>();
-	UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: created PointCloudObject"));
-    MarkRenderDataDirty();
+	CwipcPointCloudSourceAsset = nullptr;
+	MarkRenderDataDirty();
 }
 
 #if WITH_EDITOR

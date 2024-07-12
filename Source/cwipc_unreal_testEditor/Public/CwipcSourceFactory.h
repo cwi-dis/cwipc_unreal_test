@@ -4,14 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
+#include "CwipcSource.h"
 #include "CwipcSourceFactory.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class CWIPC_UNREAL_TESTEDITOR_API UCwipcSourceFactory : public UFactory
+class CWIPC_UNREAL_TESTEDITOR_API UCwipcSourceFactoryNew : public UFactory
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
+
+	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
 	
+	virtual bool ShouldShowInNewMenu() const override;
+
+	virtual uint32 GetMenuCategories() const override;
 };
