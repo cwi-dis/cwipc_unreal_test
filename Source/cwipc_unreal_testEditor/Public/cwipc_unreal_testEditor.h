@@ -7,6 +7,7 @@
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
 #include "UnrealEd.h"
+#include "CwipcSourceActions.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(CwipcUnrealTestEditor, All, All)
 
@@ -15,5 +16,7 @@ class FCwipcUnrealTestEditorModule: public IModuleInterface
 public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
+private:
+    TSharedPtr<FCwipcSourceActions> CwipcSourceActions;
 
 };

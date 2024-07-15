@@ -36,16 +36,17 @@
 FCwipcSourceActions::FCwipcSourceActions()
 { }
 
+#if 0
 bool FCwipcSourceActions::CanFilter()
 {
     return true;
 }
+#endif
 
-
+#if 0
 void FCwipcSourceActions::GetActions(const TArray<UObject*>& InObjects, FToolMenuSection& Section)
 {
 	// xxxjack this is where the magic goes to add our "Add Cwipc Source" command goes, I think.
-#if 0
 	FAssetTypeActions_Base::GetActions(InObjects, Section);
 
     auto CwipcSources = GetTypedWeakObjectPtrs<UCwipcSource>(InObjects);
@@ -82,8 +83,8 @@ void FCwipcSourceActions::GetActions(const TArray<UObject*>& InObjects, FToolMen
 			FCanExecuteAction::CreateSP(this, &FCwipcSourceActions::CanExecuteFindInExplorer, CwipcSources)
 		)
 	);
-#endif
 }
+#endif
 
 
 uint32 FCwipcSourceActions::GetCategories()
@@ -94,7 +95,7 @@ uint32 FCwipcSourceActions::GetCategories()
 
 FText FCwipcSourceActions::GetName() const
 {
-    return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_CwipcSource", "Cwipc Point Cloud Source Asset");
+    return INVTEXT("Cwipc Point Cloud Source Asset");
 }
 
 
@@ -103,6 +104,7 @@ UClass* FCwipcSourceActions::GetSupportedClass() const
     return UCwipcSource::StaticClass();
 }
 
+#if 0
 FText FCwipcSourceActions::GetAssetDescription(const FAssetData& AssetData) const
 {
 	/*
@@ -119,21 +121,22 @@ FText FCwipcSourceActions::GetAssetDescription(const FAssetData& AssetData) cons
 	*/
 	return FText::GetEmpty();
 }
+#endif
 
 
 FColor FCwipcSourceActions::GetTypeColor() const
 {
-    //return FColor::Orange;
-	return FColor(255, 165, 0);
+    return FColor::Cyan;
 }
 
-
+#if 0
 bool FCwipcSourceActions::HasActions(const TArray<UObject*>& InObjects) const
 {
     return true;
 }
+#endif
 
-
+#if 0
 class UThumbnailInfo* FCwipcSourceActions::GetThumbnailInfo(UObject* Asset) const
 {
     /*
@@ -150,8 +153,9 @@ class UThumbnailInfo* FCwipcSourceActions::GetThumbnailInfo(UObject* Asset) cons
 
     return nullptr;
 }
+#endif
 
-
+#if 0
 bool FCwipcSourceActions::CanExecuteReimport(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const
 {
     for ( auto ObjIt = Objects.CreateConstIterator(); ObjIt; ++ObjIt )
@@ -166,7 +170,9 @@ bool FCwipcSourceActions::CanExecuteReimport(const TArray<TWeakObjectPtr<UCwipcS
 
     return false;
 }
+#endif
 
+#if 0
 void FCwipcSourceActions::ExecuteReimport(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const
 {
     for ( auto ObjIt = Objects.CreateConstIterator(); ObjIt; ++ObjIt )
@@ -178,12 +184,12 @@ void FCwipcSourceActions::ExecuteReimport(const TArray<TWeakObjectPtr<UCwipcSour
 		FReimportManager::Instance()->Reimport(Object, true);
     }
 }
+#endif
 
-
+#if 0
 bool 
 FCwipcSourceActions::CanExecuteOpenInEditor(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const
 {
-#if 0
     for (auto ObjIt = Objects.CreateConstIterator(); ObjIt; ++ObjIt)
     {
 		auto Object = ( *ObjIt ).Get();
@@ -197,15 +203,15 @@ FCwipcSourceActions::CanExecuteOpenInEditor(const TArray<TWeakObjectPtr<UCwipcSo
 		// If one object is valid, we can execute the action
 		return true;
     }
-#endif
 
     return false;
 }
+#endif
 
+#if 0
 void
 FCwipcSourceActions::ExecuteOpenInEditor(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const
 {
-#if 0
     for ( auto ObjIt = Objects.CreateConstIterator(); ObjIt; ++ObjIt )
     {
 		auto Object = ( *ObjIt ).Get();
@@ -218,13 +224,13 @@ FCwipcSourceActions::ExecuteOpenInEditor(const TArray<TWeakObjectPtr<UCwipcSourc
 
 		FPlatformProcess::LaunchFileInDefaultExternalApplication(*SourceFilePath, NULL, ELaunchVerb::Open);
     }
-#endif
 }
+#endif
 
+#if 0
 bool
 FCwipcSourceActions::CanExecuteFindInExplorer(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const
 {
-#if 0
 	for ( auto ObjIt = Objects.CreateConstIterator(); ObjIt; ++ObjIt )
 	{
 		auto Object = (*ObjIt).Get();
@@ -238,14 +244,14 @@ FCwipcSourceActions::CanExecuteFindInExplorer(const TArray<TWeakObjectPtr<UCwipc
 		// If one object is valid, we can execute the action
 		return true;
 	}
-#endif
 	return false;
 }
+#endif
 
+#if 0
 void
 FCwipcSourceActions::ExecuteFindInExplorer(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const
 {
-#if 0
 	for ( auto ObjIt = Objects.CreateConstIterator(); ObjIt; ++ObjIt )
 	{
 		auto Object = (*ObjIt).Get();
@@ -256,7 +262,7 @@ FCwipcSourceActions::ExecuteFindInExplorer(const TArray<TWeakObjectPtr<UCwipcSou
 		if ( SourceFilePath.Len() && IFileManager::Get().FileSize(*SourceFilePath) != INDEX_NONE )
 			return FPlatformProcess::ExploreFolder(*SourceFilePath);
 	}
-#endif
 }
+#endif
 
 #undef LOCTEXT_NAMESPACE

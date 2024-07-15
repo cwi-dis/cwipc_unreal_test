@@ -41,16 +41,17 @@ class FCwipcSourceActions : public FAssetTypeActions_Base
 	virtual FText GetName() const override;
 	virtual FColor GetTypeColor() const override;
 	virtual UClass* GetSupportedClass() const override;
-	virtual uint32 GetCategories() override;    
+	virtual uint32 GetCategories() override;
+#if 0
 	virtual class UThumbnailInfo* GetThumbnailInfo(UObject* Asset) const override;
 	virtual bool HasActions(const TArray<UObject*>& InObjects) const override;
 	virtual void GetActions(const TArray<UObject*>& InObjects, struct FToolMenuSection& Section) override;
 
 	virtual bool CanFilter() override;   
 	virtual FText GetAssetDescription(const FAssetData& AssetData) const override;
-
+#endif
     private:
-
+#if 0
 	// Reimport actions
 	bool CanExecuteReimport(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const;
 	void ExecuteReimport(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const;
@@ -62,4 +63,5 @@ class FCwipcSourceActions : public FAssetTypeActions_Base
 	// Find In Explorer Actions
 	bool CanExecuteFindInExplorer(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const;
 	void ExecuteFindInExplorer(const TArray<TWeakObjectPtr<UCwipcSource>> Objects) const;	
+#endif
 };
