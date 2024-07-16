@@ -43,6 +43,5 @@ uint32 UCwipcSourceFactoryNew::GetMenuCategories() const
 
 FText UCwipcSourceFactoryNew::GetDisplayName() const
 {
-	FString name = FString(TEXT("JackIsGek"));
-	return FText::FromString(name);
+	return INVTEXT("Cwipc Point Cloud Source - Synthetic");
 }
