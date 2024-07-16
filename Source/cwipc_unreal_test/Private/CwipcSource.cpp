@@ -75,8 +75,8 @@ int32 UCwipcSource::GetNumberOfPoints()
         return 0;
     }
     int32 copied_count = pc->copy_uncompressed(pc_points, byte_count);
-    if (byte_count != copied_count) {
-        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwpicSource::GetNumberOfPoints: copy_uncompressed copied wrong number of bytes. Wanted %d, got %d"), byte_count, copied_count);
+    if (pc_count != copied_count) {
+        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwpicSource::GetNumberOfPoints: copy_uncompressed copied wrong number of points. Wanted %d, got %d"), pc_count, copied_count);
         free(pc_points);
         pc_points = nullptr;
         return 0;
