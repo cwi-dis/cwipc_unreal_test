@@ -138,12 +138,15 @@ void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunction
 	{
 		NDI_FUNC_BINDER(UCwipcNiagaraDataInterface, GetColor)::Bind(this, OutFunc);
 	}
-	else if (BindingInfo.Name == GetPositionName && BindingInfo.GetNumInputs() == 2 && BindingInfo.GetNumOutputs() == 3)
+	else if (BindingInfo.Name == GetPositionName && BindingInfo.GetNumInputs() == 1 && BindingInfo.GetNumOutputs() == 3)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UCwipcNiagaraDataInterface::GetVMExternalFunction: bound GetPosition"));
 		NDI_FUNC_BINDER(UCwipcNiagaraDataInterface, GetPosition)::Bind(this, OutFunc);
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UCwipcNiagaraDataInterface::GetVMExternalFunction: failed to bind %s"), *BindingInfo.Name.ToString());
+
 		OutFunc = FVMExternalFunction();
 	}
 }
@@ -197,19 +200,25 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	cwipc_point *pt = CwipcPointCloudSourceAsset->GetPoint(SampleIndexParam.Get());
+	int idx = SampleIndexParam.Get();
+	cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
 	if (pt == nullptr) {
 		return;
 	}
 	*OutSampleA.GetDest() = 1.0;
-	*OutSampleR.GetDest() = pt->r / 255.0;
-	*OutSampleG.GetDest() = pt->g / 255.0;
-	*OutSampleB.GetDest() = pt->b / 255.0;
+	float r = pt->r / 255.0;
+	float g = pt->g / 255.0;
+	float b = pt->b / 255.0;
+	*OutSampleR.GetDest() = r;
+	*OutSampleG.GetDest() = g;
+	*OutSampleB.GetDest() = b;
 	SampleIndexParam.Advance();
 	OutSampleR.Advance();
 	OutSampleG.Advance();
 	OutSampleB.Advance();
 	OutSampleA.Advance();
+	UE_LOG(LogTemp, Warning, TEXT("GetColor(%d) -> (%f, %f, %f)"), idx, r, g, b);
+
 }
 
 void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& Context)
@@ -223,7 +232,8 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(SampleIndexParam.Get());
+	int idx = SampleIndexParam.Get();
+	cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
 	if (pt == nullptr) {
 		return;
 	}
@@ -234,6 +244,7 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 	OutSampleX.Advance();
 	OutSampleY.Advance();
 	OutSampleZ.Advance();
+	UE_LOG(LogTemp, Warning, TEXT("GetPosition(%d) -> (%f, %f, %f)"), idx, pt->x, pt->y, pt->z);
 }
 
 void UCwipcNiagaraDataInterface::GetPointIDsToSpawnAtTime(FVectorVMExternalFunctionContext& Context)
