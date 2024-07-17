@@ -6,11 +6,14 @@
 #include "cwipc_util/api.h"
 #include "CoreGlobals.h"
 
+
 #define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
+
 
 static const FName GetNumberOfPointsName("GetNumberOfPoints");
 static const FName GetColorName("GetColor");
 static const FName GetPositionName("GetPosition");
+static const FName GetPointIDsToSpawnName("GetPointIDsToSpawn");
 
 UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -85,7 +88,20 @@ void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>&
 
 		OutFunctions.Add(Sig);
 	}
+	{
+		// GetPointIDsToSpawn
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetPointIDsToSpawnName;
+		Sig.bMemberFunction = true;
+		Sig.bRequiresContext = false;
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCache")));	// PointCache in
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("PointID")));	// PointID Out
 
+		Sig.SetDescription(LOCTEXT("DataInterfaceHoudini_GetPointIDsToSpawn",
+			"Helper function returning the point ID for a given sample index in the point cache file."));
+
+		OutFunctions.Add(Sig);
+	}
 	{
 		// GetPosition
 		FNiagaraFunctionSignature Sig;
@@ -121,6 +137,7 @@ void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>&
 
 DEFINE_NDI_DIRECT_FUNC_BINDER(UCwipcNiagaraDataInterface, GetPosition);
 DEFINE_NDI_DIRECT_FUNC_BINDER(UCwipcNiagaraDataInterface, GetColor);
+DEFINE_NDI_DIRECT_FUNC_BINDER(UCwipcNiagaraDataInterface, GetPointIDsToSpawn);
 
 void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunctionBindingInfo& BindingInfo, void* InstanceData, FVMExternalFunction& OutFunc)
 {
@@ -133,6 +150,10 @@ void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunction
 	if (BindingInfo.Name == GetNumberOfPointsName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetNumberOfPoints);
+	}
+	else if (BindingInfo.Name == GetPointIDsToSpawnName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
+	{
+		NDI_FUNC_BINDER(UCwipcNiagaraDataInterface, GetPointIDsToSpawn)::Bind(this, OutFunc);
 	}
 	else if (BindingInfo.Name == GetColorName && BindingInfo.GetNumInputs() == 1 && BindingInfo.GetNumOutputs() == 4)
 	{
@@ -200,24 +221,27 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	int idx = SampleIndexParam.Get();
-	cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
-	if (pt == nullptr) {
-		return;
+	for (int32 i = 0; i < Context.GetNumInstances(); ++i)
+	{
+		int32 idx = SampleIndexParam.Get();
+		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
+		if (pt == nullptr) {
+			return;
+		}
+		*OutSampleA.GetDest() = 1.0;
+		float r = pt->r / 255.0;
+		float g = pt->g / 255.0;
+		float b = pt->b / 255.0;
+		*OutSampleR.GetDest() = r;
+		*OutSampleG.GetDest() = g;
+		*OutSampleB.GetDest() = b;
+		SampleIndexParam.Advance();
+		OutSampleR.Advance();
+		OutSampleG.Advance();
+		OutSampleB.Advance();
+		OutSampleA.Advance();
+		UE_LOG(LogTemp, Warning, TEXT("GetColor(%d) -> (%f, %f, %f)"), idx, r, g, b);
 	}
-	*OutSampleA.GetDest() = 1.0;
-	float r = pt->r / 255.0;
-	float g = pt->g / 255.0;
-	float b = pt->b / 255.0;
-	*OutSampleR.GetDest() = r;
-	*OutSampleG.GetDest() = g;
-	*OutSampleB.GetDest() = b;
-	SampleIndexParam.Advance();
-	OutSampleR.Advance();
-	OutSampleG.Advance();
-	OutSampleB.Advance();
-	OutSampleA.Advance();
-	UE_LOG(LogTemp, Warning, TEXT("GetColor(%d) -> (%f, %f, %f)"), idx, r, g, b);
 
 }
 
@@ -232,21 +256,28 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	int idx = SampleIndexParam.Get();
-	cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
-	if (pt == nullptr) {
-		return;
+	for (int32 i = 0; i < Context.GetNumInstances(); ++i)
+	{
+		int32 idx = SampleIndexParam.Get();
+		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
+		if (pt == nullptr) {
+			return;
+		}
+		*OutSampleX.GetDest() = pt->y*100.0;
+		*OutSampleY.GetDest() = pt->x*-100.0;
+		*OutSampleZ.GetDest() = pt->z*-100.0;
+		SampleIndexParam.Advance();
+		OutSampleX.Advance();
+		OutSampleY.Advance();
+		OutSampleZ.Advance();
+		UE_LOG(LogTemp, Warning, TEXT("GetPosition(%d) -> (%f, %f, %f)"), idx, pt->x, pt->y, pt->z);
 	}
-	*OutSampleX.GetDest() = pt->x;
-	*OutSampleY.GetDest() = pt->y;
-	*OutSampleZ.GetDest() = pt->z;
-	SampleIndexParam.Advance();
-	OutSampleX.Advance();
-	OutSampleY.Advance();
-	OutSampleZ.Advance();
-	UE_LOG(LogTemp, Warning, TEXT("GetPosition(%d) -> (%f, %f, %f)"), idx, pt->x, pt->y, pt->z);
 }
 
-void UCwipcNiagaraDataInterface::GetPointIDsToSpawnAtTime(FVectorVMExternalFunctionContext& Context)
+void UCwipcNiagaraDataInterface::GetPointIDsToSpawn(FVectorVMExternalFunctionContext& Context)
 {
+    VectorVM::FExternalFuncRegisterHandler<int32> OutPointIDs(Context);
+    int32 id = OutPointIDs.Get();
+    
+    OutPointIDs.Advance();
 }

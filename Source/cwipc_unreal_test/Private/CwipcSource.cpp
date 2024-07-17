@@ -3,6 +3,8 @@
 
 #include "CwipcSource.h"
 
+
+
 UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
       source(nullptr),
@@ -82,7 +84,38 @@ int32 UCwipcSource::GetNumberOfPoints()
         return 0;
     }
     UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::GetNumberOfPoints:  pc_count is %d"), pc_count);
+    //AllPoints(); // Call the AllPoints function
     return pc_count;
+}
+
+TArray<FCwipcPoint> UCwipcSource::AllPoints()
+{
+    UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::AllPoints: is called on 0x%x"),(uint64) this);
+    if (pc_points == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::AllPoints: pc_points is null"));
+    }
+    if (pc_count == 0) {
+        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::AllPoints: pc_count is 0"));
+    }
+
+    TArray<FCwipcPoint> allPoints;
+    for (int32 i = 0; i < pc_count; i++) {
+        cwipc_point* point = GetPoint(i);
+        if (point != nullptr) {
+            FCwipcPoint pt;
+            pt.Index = i;
+            pt.X = point->x;
+            pt.Y = point->y;
+            pt.Z = point->z;
+            pt.R = point->r;
+            pt.G = point->g;
+            pt.B = point->b;
+            allPoints.Add(pt);
+        }
+    }
+
+    return allPoints;
+    UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::AllPoints:  allPoints is %d"), allPoints.Num());
 }
 
 cwipc_point* UCwipcSource::GetPoint(int32 index) const
@@ -92,7 +125,7 @@ cwipc_point* UCwipcSource::GetPoint(int32 index) const
 		return nullptr;
 	}
     if (index < 0 || index >= pc_count) {
-		UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::GetPoint: index out of range"));
+		UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::GetPoint: index %d out of range %d"), index, pc_count);
 		return nullptr;
 	}
     return &pc_points[index];
@@ -102,7 +135,7 @@ void UCwipcSource::PostInitProperties()
 {
 	Super::PostInitProperties();
 	UE_LOG(LogTemp, Warning, TEXT("xxxJack Cwipcsource PostInitProperties"));
-
+#if 0
     source = cwipc_synthetic(15, 100, nullptr, CWIPC_API_VERSION);
     if (pc != nullptr) {
         cwipc_free(pc);
@@ -112,6 +145,7 @@ void UCwipcSource::PostInitProperties()
         free(pc_points);
         pc_points = nullptr;
     }
+#endif
 }
 
 void UCwipcSource::PostLoad()

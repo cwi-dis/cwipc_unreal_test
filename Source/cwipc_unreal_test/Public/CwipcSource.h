@@ -12,6 +12,33 @@ class cwipc_source;
 class cwipc;
 struct cwipc_point;
 
+USTRUCT(BlueprintType)
+struct FCwipcPoint
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 Index;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float X;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float Y;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float Z;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float R;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float G;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float B;
+};
+
 USTRUCT()
 struct FPcIndexes
 {
@@ -45,6 +72,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get number of points from current point cloud"))
 	int32 GetNumberOfPoints();
+
+	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get point from current point cloud and store it in TArray"))
+	TArray<FCwipcPoint> AllPoints();
 
 	UPROPERTY(VisibleAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Number of points in current point cloud"))
 	int pc_count;

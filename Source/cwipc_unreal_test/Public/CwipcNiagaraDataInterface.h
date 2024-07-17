@@ -116,5 +116,5 @@ public:
 
 	void GetPosition(FVectorVMExternalFunctionContext& Context);
 
-	void GetPointIDsToSpawnAtTime(FVectorVMExternalFunctionContext& Context);
+	void GetPointIDsToSpawn(FVectorVMExternalFunctionContext& Context);
 };
