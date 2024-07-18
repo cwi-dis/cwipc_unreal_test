@@ -32,7 +32,7 @@ void UCwipcSource::_initialize()
     }
     pc_count = 0;
     pc_timestamp = 0;
-    source = cwipc_synthetic(15, 100, nullptr, CWIPC_API_VERSION);
+    source = cwipc_synthetic(15, 1000, nullptr, CWIPC_API_VERSION);
     if (source == nullptr) {
         UE_LOG(LogTemp, Error, TEXT("xxxjack UCwpicSource: cwipc_synthetic returned null"));
     }

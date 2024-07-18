@@ -17,6 +17,7 @@ static const FName GetPositionName("GetPosition");
 UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	CwipcPointCloudSourceAsset = nullptr;
 #if 0
 	Proxy.Reset(new FNDIMousePositionProxy());
 #endif
@@ -46,7 +47,7 @@ void UCwipcNiagaraDataInterface::PostInitProperties()
 void UCwipcNiagaraDataInterface::PostLoad()
 {
 	Super::PostLoad();
-	CwipcPointCloudSourceAsset = nullptr;
+	//CwipcPointCloudSourceAsset = nullptr;
 	MarkRenderDataDirty();
 }
 
@@ -243,9 +244,9 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 		if (pt == nullptr) {
 			return;
 		}
-		*OutSampleX.GetDest() = pt->x*100.0;
-		*OutSampleY.GetDest() = pt->z*-100.0;
-		*OutSampleZ.GetDest() = pt->y*100.0;
+		*OutSampleX.GetDest() = pt->x * 100.0;
+		*OutSampleY.GetDest() = pt->z * -100.0;
+		*OutSampleZ.GetDest() = pt->y * 100.0;
 		SampleIndexParam.Advance();
 		OutSampleX.Advance();
 		OutSampleY.Advance();
