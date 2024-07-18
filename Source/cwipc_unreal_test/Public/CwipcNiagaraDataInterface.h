@@ -14,59 +14,7 @@ struct cwipc_point;
 /**
  * 
  */
-USTRUCT()
-struct FCwipcEvent
-{
-	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
-	float x;
-
-	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
-	float y;
-
-	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
-	float z;
-
-	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
-	int8 r;
-
-	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
-	int8 g;
-
-	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
-	int8 b;
-
-	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara")
-	int8 tile;
-
-	FCwipcEvent()
-	{
-		x = 0.0f;
-		y = 0.0f;
-		z = 0.0f;
-		r = 0;
-		g = 0;
-		b = 0;
-		tile = 0;
-	}
-
-	inline bool operator==(const FCwipcEvent& Other) const
-	{
-		if ((Other.x != x) || (Other.y != y)
-			|| (Other.z != z) || (Other.r != r)
-			|| (Other.g != g) || (Other.b != b)
-			|| (Other.tile != tile))
-			return false;
-
-		return true;
-	}
-
-	inline bool operator!=(const FCwipcEvent& Other) const
-	{
-		return !(*this == Other);
-	}
-};
 
 UCLASS(EditInlineNew, Category = "Cwipc Niagara", meta = (DisplayName = "Cwipc Point Cloud Niagara Data Interface"))
 class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInterface
@@ -115,6 +63,4 @@ public:
 	void GetColor(FVectorVMExternalFunctionContext& Context);
 
 	void GetPosition(FVectorVMExternalFunctionContext& Context);
-
-	void GetPointIDsToSpawn(FVectorVMExternalFunctionContext& Context);
 };

@@ -13,7 +13,7 @@ UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
       pc_count(0)
 
 {
-	UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwipcSource constructor 0x%x"),(uint64) this);
+	//UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwipcSource constructor 0x%x"),(uint64) this);
 }
 
 void UCwipcSource::_initialize()
@@ -42,7 +42,7 @@ void UCwipcSource::_initialize()
 
 int32 UCwipcSource::GetNumberOfPoints()
 {
-    UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::GetNumberOfPoints: is called on 0x%x"),(uint64) this);
+    //UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::GetNumberOfPoints: is called on 0x%x"),(uint64) this);
     if (source == nullptr) {
         _initialize();
     }
@@ -65,7 +65,7 @@ int32 UCwipcSource::GetNumberOfPoints()
     
     pc_count = pc->count();
     pc_timestamp = pc->timestamp();
-    UE_LOG(LogTemp, Display, TEXT("xxxjack UCwpicSource::GetNumberOfPoints: got pointcloud with %d points"), pc->count());
+    //UE_LOG(LogTemp, Display, TEXT("xxxjack UCwpicSource::GetNumberOfPoints: got pointcloud with %d points"), pc->count());
     if (pc_points) {
         free(pc_points);
         pc_points = nullptr;
@@ -83,40 +83,12 @@ int32 UCwipcSource::GetNumberOfPoints()
         pc_points = nullptr;
         return 0;
     }
-    UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::GetNumberOfPoints:  pc_count is %d"), pc_count);
+    //UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::GetNumberOfPoints:  pc_count is %d"), pc_count);
     //AllPoints(); // Call the AllPoints function
     return pc_count;
 }
 
-TArray<FCwipcPoint> UCwipcSource::AllPoints()
-{
-    UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::AllPoints: is called on 0x%x"),(uint64) this);
-    if (pc_points == nullptr) {
-        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::AllPoints: pc_points is null"));
-    }
-    if (pc_count == 0) {
-        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwipcSource::AllPoints: pc_count is 0"));
-    }
 
-    TArray<FCwipcPoint> allPoints;
-    for (int32 i = 0; i < pc_count; i++) {
-        cwipc_point* point = GetPoint(i);
-        if (point != nullptr) {
-            FCwipcPoint pt;
-            pt.Index = i;
-            pt.X = point->x;
-            pt.Y = point->y;
-            pt.Z = point->z;
-            pt.R = point->r;
-            pt.G = point->g;
-            pt.B = point->b;
-            allPoints.Add(pt);
-        }
-    }
-
-    return allPoints;
-    UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwpicSource::AllPoints:  allPoints is %d"), allPoints.Num());
-}
 
 cwipc_point* UCwipcSource::GetPoint(int32 index) const
 {
@@ -134,24 +106,13 @@ cwipc_point* UCwipcSource::GetPoint(int32 index) const
 void UCwipcSource::PostInitProperties()
 {
 	Super::PostInitProperties();
-	UE_LOG(LogTemp, Warning, TEXT("xxxJack Cwipcsource PostInitProperties"));
-#if 0
-    source = cwipc_synthetic(15, 100, nullptr, CWIPC_API_VERSION);
-    if (pc != nullptr) {
-        cwipc_free(pc);
-        pc = nullptr;
-    }
-    if (pc_points != nullptr) {
-        free(pc_points);
-        pc_points = nullptr;
-    }
-#endif
+	//UE_LOG(LogTemp, Warning, TEXT("xxxJack Cwipcsource PostInitProperties"));
 }
 
 void UCwipcSource::PostLoad()
 {
 	Super::PostLoad();
-	UE_LOG(LogTemp, Warning, TEXT("xxxJack Cwipcsource PostLoad"));
+	//UE_LOG(LogTemp, Warning, TEXT("xxxJack Cwipcsource PostLoad"));
 	if (source == nullptr) {
 		UE_LOG(LogTemp, Warning, TEXT("xxxjack UCwipcNiagaraDataInterface::PostLoad: cwipc_synthetic failed"));
 	}
