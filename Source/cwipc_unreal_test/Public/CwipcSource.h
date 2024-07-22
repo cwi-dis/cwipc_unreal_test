@@ -25,8 +25,22 @@ protected:
 	cwipc_source* source;
 	cwipc* pc;
 	cwipc_point* pc_points;
-	
-	void _initialize();
+
+	/// <summary>
+	/// Initialize the source, if it has not been initialized already.
+	/// </summary>
+	/// <returns>Returns true if the source is available for use (no matter whether it was created now or pre-existing)</returns>
+	bool _OptionalInitializeSource();
+	/// <summary>
+	/// Get a new point cloud into pc, if one is available.
+	/// </summary>
+	/// <returns>Returns true if a point cloud is available (no matter whether it is new or old)</returns>
+	bool _CheckForNewPointCloudAvailable();
+
+	/// <summary>
+	/// De-allocates everything in the right order.
+	/// </summary>
+	void _CleanupEverything();
 
 public:
 
@@ -36,12 +50,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get number of points from current point cloud"))
 	int32 GetNumberOfPoints();
 
+	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get particle size for current point cloud"))
+	float GetParticleSize();
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Factor to convert point size to particle size"))
+	float particle_size_factor = 1.0;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Synthetic generator: wanted point count"))
+	int synthetic_wanted_pointcount = 400;
+
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Synthetic generator: wanted clouds per second"))
+	int synthetic_wanted_fps = 5;
 
 	UPROPERTY(VisibleAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Number of points in current point cloud"))
 	int pc_count;
 
 	UPROPERTY(VisibleAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Timestamp of current point cloud"))
-	int pc_timestamp;
+	unsigned int pc_timestamp;
 	// Sample indexes for each point
 
 	cwipc_point * GetPoint(int32 index) const;
