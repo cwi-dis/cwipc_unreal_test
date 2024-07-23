@@ -25,6 +25,7 @@ protected:
 	cwipc_source* source;
 	cwipc* pc;
 	cwipc_point* pc_points;
+	int pc_points_count;
 
 	/// <summary>
 	/// Initialize the source, if it has not been initialized already.
@@ -61,12 +62,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Synthetic generator: wanted clouds per second"))
 	int synthetic_wanted_fps = 5;
-
-	UPROPERTY(VisibleAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Number of points in current point cloud"))
-	int pc_count;
-
-	UPROPERTY(VisibleAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Timestamp of current point cloud"))
-	unsigned int pc_timestamp;
+	
 	// Sample indexes for each point
 
 	cwipc_point * GetPoint(int32 index) const;
