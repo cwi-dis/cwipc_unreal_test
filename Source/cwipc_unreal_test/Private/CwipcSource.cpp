@@ -13,7 +13,7 @@ UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
       pc_points_count(0)
 
 {
-    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::UCwipcSource() on 0x%p called"), (void *)this);
+    UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::UCwipcSource() called"), *GetPathNameSafe(this));
 }
 
 
@@ -43,7 +43,7 @@ void UCwipcSource::PostInitProperties()
 void UCwipcSource::PostLoad()
 {
     Super::PostLoad();
-    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::PostLoad() on 0x%p called"), (void *)this);
+    UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::PostLoad() called"), *GetPathNameSafe(this));
     _CleanupEverything();
 }
 
@@ -57,7 +57,7 @@ void UCwipcSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 void UCwipcSource::BeginDestroy()
 {
     Super::BeginDestroy();
-    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::BeginDestroy() on 0x%p called"), (void *)this);
+    UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::BeginDestroy() called"), *GetPathNameSafe(this));
     _CleanupEverything();
 }
 
@@ -82,15 +82,15 @@ bool UCwipcSource::_OptionalInitializeSource()
     {
         if (errorMessage)
         {
-            UE_LOG(LogTemp, Error, TEXT("UCwpicSource: cwipc_synthetic() returned error: %s"), errorMessage);
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned error: %s"), *GetPathNameSafe(this), errorMessage);
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("UCwpicSource: cwipc_synthetic() returned null, but no error message"));
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned null, but no error message"), *GetPathNameSafe(this));
         }
     }
     
-    UE_LOG(LogTemp, Display, TEXT("UcwipcSource 0x%p: created cwipc_synthetic() source"), (void *)this);
+    UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created cwipc_synthetic() source"), *GetPathNameSafe(this));
     return true;
 }
 

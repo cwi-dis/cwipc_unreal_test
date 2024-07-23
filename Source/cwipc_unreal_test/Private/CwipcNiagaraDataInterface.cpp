@@ -19,7 +19,7 @@ UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const&
 	: Super(ObjectInitializer)
 {
 	CwipcPointCloudSourceAsset = nullptr;
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface() on 0x%p called, source=0x%p"), (void*)this, (void*)CwipcPointCloudSourceAsset);
+	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::UCwipcNiagaraDataInterface() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(this));
 
 #if 0
 	Proxy.Reset(new FNDIMousePositionProxy());
@@ -28,7 +28,7 @@ UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const&
 
 void UCwipcNiagaraDataInterface::PostInitProperties()
 {
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::PostInitProperties() on 0x%p called, source=0x%p"), (void*)this, (void*)CwipcPointCloudSourceAsset);
+	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostInitProperties() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 	//UE_LOG(LogTemp, Warning, TEXT("xxxjack Cwipc,compiler version = 0x%x "), CWIPC_API_VERSION);
 	FString runtimeVersion = cwipc_get_version();
 	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::PostInitProperties: cwipc runtime version = %s "), *runtimeVersion);
@@ -49,7 +49,7 @@ void UCwipcNiagaraDataInterface::PostInitProperties()
 
 void UCwipcNiagaraDataInterface::PostLoad()
 {
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::PostLoad() on 0x%p called, source=0x%p"), (void*)this, (void *)CwipcPointCloudSourceAsset);
+	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostLoad() on called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 	Super::PostLoad();
 	//CwipcPointCloudSourceAsset = nullptr;
 	MarkRenderDataDirty();
@@ -59,7 +59,7 @@ void UCwipcNiagaraDataInterface::PostLoad()
 
 void UCwipcNiagaraDataInterface::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::PostEditChangeProperty() on 0x%p called, source=0x%p"), (void*)this, (void*)CwipcPointCloudSourceAsset);
+	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostEditChangeProperty() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(this));
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UCwipcNiagaraDataInterface, CwipcPointCloudSourceAsset))
@@ -170,7 +170,7 @@ void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunction
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UCwipcNiagaraDataInterface::GetVMExternalFunction: failed to bind %s"), *BindingInfo.Name.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("UCwipcNiagaraDataInterface[%s]::GetVMExternalFunction: failed to bind name %s"), *GetPathNameSafe(this), *BindingInfo.Name.ToString());
 
 		OutFunc = FVMExternalFunction();
 	}
@@ -184,7 +184,7 @@ bool UCwipcNiagaraDataInterface::CopyToInternal(UNiagaraDataInterface* Destinati
 	UCwipcNiagaraDataInterface* CastedInterface = CastChecked<UCwipcNiagaraDataInterface>(Destination);
 	if (!CastedInterface)
 		return false;
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::CopyToInternal() on 0x%p called, destination=0x%p, source=0x%p"), (void*)this, (void*)CastedInterface, (void*)CwipcPointCloudSourceAsset);
+	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::CopyToInternal() called, destination=[%s], source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CastedInterface), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 
 	CastedInterface->CwipcPointCloudSourceAsset = CwipcPointCloudSourceAsset;
 	CastedInterface->MarkRenderDataDirty();
