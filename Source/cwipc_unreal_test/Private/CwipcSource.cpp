@@ -49,12 +49,14 @@ void UCwipcSource::PostLoad()
 
 void UCwipcSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
+    Super::PostEditChangeProperty(PropertyChangedEvent);
     UE_LOG(LogTemp, Display, TEXT("UCwipcSource::PostEditChangeProperty() on 0x% called"), (void *)this);
     _CleanupEverything();
 }
 
 void UCwipcSource::BeginDestroy()
 {
+    Super::BeginDestroy();
     UE_LOG(LogTemp, Display, TEXT("UCwipcSource::BeginDestroy() on 0x%p called"), (void *)this);
     _CleanupEverything();
 }
