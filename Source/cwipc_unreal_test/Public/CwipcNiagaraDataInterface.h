@@ -59,6 +59,8 @@ public:
 
 	// Returns the float value at a given sample index in the point cloud
 	void GetNumberOfPoints(FVectorVMExternalFunctionContext& Context);
+	
+	void GetParticleSize(FVectorVMExternalFunctionContext& Context);
 
 	void GetColor(FVectorVMExternalFunctionContext& Context);
 

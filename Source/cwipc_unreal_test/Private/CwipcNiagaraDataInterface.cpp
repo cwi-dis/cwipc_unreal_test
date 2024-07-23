@@ -11,6 +11,7 @@
 
 
 static const FName GetNumberOfPointsName("GetNumberOfPoints");
+static const FName GetParticleSizeName("GetParticleSize");
 static const FName GetColorName("GetColor");
 static const FName GetPositionName("GetPosition");
 
@@ -89,6 +90,20 @@ void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>&
 		OutFunctions.Add(Sig);
 	}
 	{
+		// GetParticleSize
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetParticleSizeName;
+		Sig.bMemberFunction = true;
+		Sig.bRequiresContext = false;
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCloud in
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Value")));    	// Number of points Out
+
+		Sig.SetDescription(LOCTEXT("CwipcDataInterface_GetParticleSize",
+			"Returns the particle size of points in the point cloud"));
+
+		OutFunctions.Add(Sig);
+	}
+	{
 		// GetPosition
 		FNiagaraFunctionSignature Sig;
 		Sig.Name = GetPositionName;
@@ -135,6 +150,10 @@ void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunction
 	if (BindingInfo.Name == GetNumberOfPointsName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetNumberOfPoints);
+	}
+	else if (BindingInfo.Name == GetParticleSizeName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
+	{
+		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetParticleSize);
 	}
 	else if (BindingInfo.Name == GetColorName && BindingInfo.GetNumInputs() == 1 && BindingInfo.GetNumOutputs() == 4)
 	{
@@ -186,8 +205,17 @@ bool UCwipcNiagaraDataInterface::Equals(const UNiagaraDataInterface* Other) cons
 void UCwipcNiagaraDataInterface::GetNumberOfPoints(FVectorVMExternalFunctionContext& Context)
 {
 	VectorVM::FExternalFuncRegisterHandler<int32> OutNumPoints(Context);
-	*OutNumPoints.GetDest() = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetNumberOfPoints() : 0;
+	int32 nPoints = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetNumberOfPoints() : 0;
+	*OutNumPoints.GetDest() = nPoints;
 	OutNumPoints.Advance();
+}
+
+void UCwipcNiagaraDataInterface::GetParticleSize(FVectorVMExternalFunctionContext& Context)
+{
+	VectorVM::FExternalFuncRegisterHandler<float> OutParticleSize(Context);
+	float particleSize = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetParticleSize() : 0;
+	*OutParticleSize.GetDest() = particleSize;
+	OutParticleSize.Advance();
 }
 
 void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Context)
@@ -202,7 +230,8 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	for (int32 i = 0; i < Context.GetNumInstances(); ++i)
+	int32 numPoints = Context.GetNumInstances();
+	for (int32 i = 0; i < numPoints; ++i)
 	{
 		int32 idx = SampleIndexParam.Get();
 		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
@@ -237,7 +266,8 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	for (int32 i = 0; i < Context.GetNumInstances(); ++i)
+	int32 numPoints = Context.GetNumInstances();
+	for (int32 i = 0; i < numPoints; ++i)
 	{
 		int32 idx = SampleIndexParam.Get();
 		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
