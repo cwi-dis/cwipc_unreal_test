@@ -13,7 +13,7 @@ UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
       pc_points_count(0)
 
 {
-	//UE_LOG(LogTemp, Warning, TEXT("xxxJack UCwipcSource constructor 0x%x"),(uint64) this);
+    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::UCwipcSource() on 0x%p called"), (void *)this);
 }
 
 
@@ -43,6 +43,20 @@ void UCwipcSource::PostInitProperties()
 void UCwipcSource::PostLoad()
 {
     Super::PostLoad();
+    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::PostLoad() on 0x%p called"), (void *)this);
+    _CleanupEverything();
+}
+
+void UCwipcSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::PostEditChangeProperty() on 0x% called"), (void *)this);
+    _CleanupEverything();
+}
+
+void UCwipcSource::BeginDestroy()
+{
+    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::BeginDestroy() on 0x%p called"), (void *)this);
+    _CleanupEverything();
 }
 
 bool UCwipcSource::_OptionalInitializeSource()
@@ -54,17 +68,27 @@ bool UCwipcSource::_OptionalInitializeSource()
         pc->free();
         pc = nullptr;
     }
-    if (pc_points != nullptr) {
+    if (pc_points != nullptr)
+    {
         free(pc_points);
         pc_points = nullptr;
         pc_points_count = 0;
     }
-    source = cwipc_synthetic(synthetic_wanted_fps, synthetic_wanted_pointcount, nullptr, CWIPC_API_VERSION);
-    if (source == nullptr) {
-        UE_LOG(LogTemp, Error, TEXT("xxxjack UCwpicSource: cwipc_synthetic returned null"));
+    char* errorMessage = nullptr;
+    source = cwipc_synthetic(synthetic_wanted_fps, synthetic_wanted_pointcount, &errorMessage, CWIPC_API_VERSION);
+    if (source == nullptr)
+    {
+        if (errorMessage)
+        {
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource: cwipc_synthetic() returned error: %s"), errorMessage);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource: cwipc_synthetic() returned null, but no error message"));
+        }
     }
     
-    UE_LOG(LogTemp, Warning, TEXT("xxxJack UcwipcSource: created cwipc_synthetic() source"));
+    UE_LOG(LogTemp, Display, TEXT("UcwipcSource 0x%p: created cwipc_synthetic() source"), (void *)this);
     return true;
 }
 

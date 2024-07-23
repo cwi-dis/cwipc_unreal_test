@@ -5,7 +5,7 @@
 
 UCwipcSourceFactoryNew::UCwipcSourceFactoryNew(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	UE_LOG(LogTemp, Warning, TEXT("CwipcUnrealTestEditor: UCwipcSourceFactoryNew created"));
+	UE_LOG(LogTemp, Display, TEXT("UCwipcSourceFactoryNew::UCwipcSourceFactoryNew() on 0x%p called"), (void*)this);
 	// This factory is responsible for manufacturing HoudiniEngine assets.
 	SupportedClass = UCwipcSource::StaticClass();
 
@@ -26,8 +26,8 @@ UCwipcSourceFactoryNew::UCwipcSourceFactoryNew(const FObjectInitializer& ObjectI
 UObject*
 UCwipcSourceFactoryNew::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
-	UE_LOG(LogTemp, Warning, TEXT("CwipcUnrealTestEditor: UCwipcSourceFactoryNew::FactoryCreateNew() called"));
 	UCwipcSource* NewCwipcSourceObject = NewObject<UCwipcSource>(InParent, Class, Name, Flags | RF_Transactional);
+	UE_LOG(LogTemp, Display, TEXT("UCwipcSourceFactoryNew::FactoryCreateNew() on 0x%p called, return 0x%p"), (void*)this, (void *)NewCwipcSourceObject);
 	return NewCwipcSourceObject;
 }
 
