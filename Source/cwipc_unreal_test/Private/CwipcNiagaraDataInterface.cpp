@@ -235,10 +235,13 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	int32 numPoints = Context.GetNumInstances();
-	for (int32 i = 0; i < numPoints; ++i)
+	int32 nPoints = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetNumberOfPoints() : 1;
+
+	int32 numParticles = Context.GetNumInstances();
+	for (int32 i = 0; i < numParticles; ++i)
 	{
-		int32 idx = SampleIndexParam.Get();
+		int32 idx = i % nPoints; // xxxjack SampleIndexParam.Get();
+
 		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
 		if (pt == nullptr) {
 			return;
@@ -271,10 +274,12 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 	if (CwipcPointCloudSourceAsset == nullptr) {
 		return;
 	}
-	int32 numPoints = Context.GetNumInstances();
-	for (int32 i = 0; i < numPoints; ++i)
+	int32 nPoints = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetNumberOfPoints() : 1;
+
+	int32 numParticles = Context.GetNumInstances();
+	for (int32 i = 0; i < numParticles; ++i)
 	{
-		int32 idx = SampleIndexParam.Get();
+		int32 idx = i % nPoints; // xxjack SampleIndexParam.Get();
 		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
 		if (pt == nullptr) {
 			return;
