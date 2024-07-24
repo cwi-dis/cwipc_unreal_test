@@ -167,13 +167,14 @@ float UCwipcSource::GetParticleSize()
 
 cwipc_point* UCwipcSource::GetPoint(int32 index) const
 {
+    static cwipc_point nullpoint {1.0f, 1.0f, 1.0f, 112, 54, 25, 0};   
     if (pc_points == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("UCwipcSource::GetPoint: pc_points is null"));
-		return nullptr;
+		return &nullpoint;
 	}
     if (index < 0 || index >= pc_points_count) {
 		UE_LOG(LogTemp, Error, TEXT("UCwipcSource::GetPoint: index %d out of range %d"), index, pc_points_count);
-		return nullptr;
+		return &nullpoint;
 	}
     return &pc_points[index];
 }
