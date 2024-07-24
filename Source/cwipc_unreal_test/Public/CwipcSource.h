@@ -23,9 +23,11 @@ class CWIPC_UNREAL_TEST_API UCwipcSource : public UObject
 
 protected:
 	cwipc_source* source;
+	FCriticalSection source_lock;
 	cwipc* pc;
 	cwipc_point* pc_points;
 	int pc_points_count;
+	FCriticalSection pc_lock;
 
 	/// <summary>
 	/// Initialize the source, if it has not been initialized already.
@@ -69,6 +71,6 @@ public:
 	
 	// Sample indexes for each point
 
-	cwipc_point * GetPoint(int32 index) const;
+	cwipc_point * GetPoint(int32 index);
 	
 };

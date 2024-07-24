@@ -19,6 +19,7 @@ UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
 
 void UCwipcSource::_CleanupEverything()
 {
+    FScopeLock lock(&pc_lock);
     // xxxjack _CleanupEverything should also be called during destroction, after editing a source, etc.
     if (source != nullptr) {
         source->free();
@@ -63,6 +64,7 @@ void UCwipcSource::BeginDestroy()
 
 bool UCwipcSource::_OptionalInitializeSource()
 {
+    FScopeLock lock(&source_lock);
     if (source != nullptr) {
         return true;
     }
@@ -96,6 +98,7 @@ bool UCwipcSource::_OptionalInitializeSource()
 
 bool UCwipcSource::_CheckForNewPointCloudAvailable()
 {
+    FScopeLock lock(&pc_lock);
     // xxxjack this method *must* be protected with a lock at some point...
     if (_OptionalInitializeSource()) {
         if (source->available(false))
@@ -148,6 +151,7 @@ bool UCwipcSource::_CheckForNewPointCloudAvailable()
 
 int32 UCwipcSource::GetNumberOfPoints()
 {
+    FScopeLock lock(&pc_lock);
     if (!_CheckForNewPointCloudAvailable()) {
         return 0;
     }
@@ -157,6 +161,7 @@ int32 UCwipcSource::GetNumberOfPoints()
 
 float UCwipcSource::GetParticleSize()
 {
+    FScopeLock lock(&pc_lock);
     if (!_CheckForNewPointCloudAvailable()) {
         return 0;
     }
@@ -165,8 +170,9 @@ float UCwipcSource::GetParticleSize()
 
 
 
-cwipc_point* UCwipcSource::GetPoint(int32 index) const
+cwipc_point* UCwipcSource::GetPoint(int32 index)
 {
+    //FScopeLock lock(&pc_lock);
     static cwipc_point nullpoint {1.0f, 1.0f, 1.0f, 112, 54, 25, 0};   
     if (pc_points == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("UCwipcSource::GetPoint: pc_points is null"));
