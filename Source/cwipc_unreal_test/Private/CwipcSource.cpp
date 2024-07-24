@@ -4,6 +4,11 @@
 #include "CwipcSource.h"
 
 
+// Define as empty to get debug prints
+#define DBG
+// Define is if(0) to not get debug prints
+// #define DBG if(0)
+
 
 UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
@@ -13,7 +18,7 @@ UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
       pc_points_count(0)
 
 {
-    UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::UCwipcSource() called"), *GetPathNameSafe(this));
+    DBG UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::UCwipcSource() called"), *GetPathNameSafe(this));
 }
 
 
@@ -44,21 +49,21 @@ void UCwipcSource::PostInitProperties()
 void UCwipcSource::PostLoad()
 {
     Super::PostLoad();
-    UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::PostLoad() called"), *GetPathNameSafe(this));
+    DBG UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::PostLoad() called"), *GetPathNameSafe(this));
     _CleanupEverything();
 }
 
 void UCwipcSource::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
     Super::PostEditChangeProperty(PropertyChangedEvent);
-    UE_LOG(LogTemp, Display, TEXT("UCwipcSource::PostEditChangeProperty() on 0x% called"), (void *)this);
+    DBG UE_LOG(LogTemp, Display, TEXT("UCwipcSource::PostEditChangeProperty() on 0x% called"), (void *)this);
     _CleanupEverything();
 }
 
 void UCwipcSource::BeginDestroy()
 {
     Super::BeginDestroy();
-    UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::BeginDestroy() called"), *GetPathNameSafe(this));
+    DBG UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::BeginDestroy() called"), *GetPathNameSafe(this));
     _CleanupEverything();
 }
 
@@ -92,7 +97,7 @@ bool UCwipcSource::_OptionalInitializeSource()
         }
     }
     
-    UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created cwipc_synthetic() source"), *GetPathNameSafe(this));
+    DBG UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created cwipc_synthetic() source"), *GetPathNameSafe(this));
     return true;
 }
 

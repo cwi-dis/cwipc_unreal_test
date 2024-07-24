@@ -6,6 +6,10 @@
 #include "cwipc_util/api.h"
 #include "CoreGlobals.h"
 
+// Define as empty to get debug prints
+#define DBG
+// Define is if(0) to not get debug prints
+// #define DBG if(0)
 
 #define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
 
@@ -19,7 +23,7 @@ UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const&
 	: Super(ObjectInitializer)
 {
 	CwipcPointCloudSourceAsset = nullptr;
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::UCwipcNiagaraDataInterface() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(this));
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::UCwipcNiagaraDataInterface() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(this));
 
 #if 0
 	Proxy.Reset(new FNDIMousePositionProxy());
@@ -28,10 +32,10 @@ UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const&
 
 void UCwipcNiagaraDataInterface::PostInitProperties()
 {
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostInitProperties() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostInitProperties() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 	//UE_LOG(LogTemp, Warning, TEXT("xxxjack Cwipc,compiler version = 0x%x "), CWIPC_API_VERSION);
 	FString runtimeVersion = cwipc_get_version();
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::PostInitProperties: cwipc runtime version = %s "), *runtimeVersion);
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface::PostInitProperties: cwipc runtime version = %s "), *runtimeVersion);
 	Super::PostInitProperties();
 	if (HasAnyFlags(RF_ClassDefaultObject))
 	{
@@ -49,7 +53,7 @@ void UCwipcNiagaraDataInterface::PostInitProperties()
 
 void UCwipcNiagaraDataInterface::PostLoad()
 {
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostLoad() on called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostLoad() on called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 	Super::PostLoad();
 	//CwipcPointCloudSourceAsset = nullptr;
 	MarkRenderDataDirty();
@@ -59,7 +63,7 @@ void UCwipcNiagaraDataInterface::PostLoad()
 
 void UCwipcNiagaraDataInterface::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostEditChangeProperty() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(this));
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostEditChangeProperty() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(this));
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UCwipcNiagaraDataInterface, CwipcPointCloudSourceAsset))
@@ -184,7 +188,7 @@ bool UCwipcNiagaraDataInterface::CopyToInternal(UNiagaraDataInterface* Destinati
 	UCwipcNiagaraDataInterface* CastedInterface = CastChecked<UCwipcNiagaraDataInterface>(Destination);
 	if (!CastedInterface)
 		return false;
-	UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::CopyToInternal() called, destination=[%s], source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CastedInterface), *GetPathNameSafe(CwipcPointCloudSourceAsset));
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::CopyToInternal() called, destination=[%s], source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CastedInterface), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 
 	CastedInterface->CwipcPointCloudSourceAsset = CwipcPointCloudSourceAsset;
 	CastedInterface->MarkRenderDataDirty();
@@ -209,22 +213,27 @@ bool UCwipcNiagaraDataInterface::Equals(const UNiagaraDataInterface* Other) cons
 
 void UCwipcNiagaraDataInterface::GetNumberOfPoints(FVectorVMExternalFunctionContext& Context)
 {
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetNumberOfPoints() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncRegisterHandler<int32> OutNumPoints(Context);
 	int32 nPoints = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetNumberOfPoints() : 0;
 	*OutNumPoints.GetDest() = nPoints;
 	OutNumPoints.Advance();
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetNumberOfPoints() returns %d"), *GetPathNameSafe(this), nPoints);
 }
 
 void UCwipcNiagaraDataInterface::GetParticleSize(FVectorVMExternalFunctionContext& Context)
 {
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetParticleSize() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncRegisterHandler<float> OutParticleSize(Context);
 	float particleSize = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetParticleSize() : 0;
 	*OutParticleSize.GetDest() = particleSize;
 	OutParticleSize.Advance();
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetParticleSize() returns %f"), *GetPathNameSafe(this), particleSize);
 }
 
 void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Context)
 {
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetColor() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncInputHandler<int32> SampleIndexParam(Context);
 
 	VectorVM::FExternalFuncRegisterHandler<float> OutSampleR(Context);
@@ -260,11 +269,13 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 		OutSampleA.Advance();
 		//UE_LOG(LogTemp, Warning, TEXT("GetColor(%d) -> (%f, %f, %f)"), idx, r, g, b);
 	}
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetColor() nParticles=%d, nPoints=%d"), *GetPathNameSafe(this), numParticles, nPoints);
 
 }
 
 void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& Context)
 {
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetPosition() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncInputHandler<int32> SampleIndexParam(Context);
 
 	VectorVM::FExternalFuncRegisterHandler<float> OutSampleX(Context);
@@ -293,4 +304,5 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 		OutSampleZ.Advance();
 		//UE_LOG(LogTemp, Warning, TEXT("GetPosition(%d) -> (%f, %f, %f)"), idx, pt->x, pt->y, pt->z);
 	}
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetPosition() nParticles=%d, nPoints=%d"), *GetPathNameSafe(this), numParticles, nPoints);
 }
