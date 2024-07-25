@@ -2,6 +2,7 @@
 
 
 #include "CwipcSource.h"
+#include <chrono>
 
 
 // Define as empty to get debug prints
@@ -67,7 +68,7 @@ void UCwipcSource::BeginDestroy()
     _CleanupEverything();
 }
 
-bool UCwipcSource::_OptionalInitializeSource()
+bool UCwipcSource::InitializeSource()
 {
     FScopeLock lock(&source_lock);
     if (source != nullptr) {
@@ -105,7 +106,7 @@ bool UCwipcSource::_CheckForNewPointCloudAvailable()
 {
     FScopeLock lock(&pc_lock);
     // xxxjack this method *must* be protected with a lock at some point...
-    if (_OptionalInitializeSource()) {
+    if (InitializeSource()) {
         if (source->available(false))
         {
             // If a new pointcloud is available we get it.
@@ -156,12 +157,18 @@ bool UCwipcSource::_CheckForNewPointCloudAvailable()
 
 int32 UCwipcSource::GetNumberOfPoints()
 {
+    //  const std::clock_t start = std::clock();
     FScopeLock lock(&pc_lock);
     if (!_CheckForNewPointCloudAvailable()) {
-        return 0;
-    }
+		return 0;
+	}
+ 
+    int32 rv = pc_points_count;
+    // const std::clock_t end = std::clock();
+    //  
+// UE_LOG(LogTemp, Display, TEXT("UCwipcSource[%s]::GetNumberOfPoints() took %f ms"), *GetPathNameSafe(this), 1000.0 * (end - start) / CLOCKS_PER_SEC);
+    return rv;
 
-    return pc->count();
 }
 
 float UCwipcSource::GetParticleSize()
@@ -177,7 +184,7 @@ float UCwipcSource::GetParticleSize()
 
 cwipc_point* UCwipcSource::GetPoint(int32 index)
 {
-    //FScopeLock lock(&pc_lock);
+    FScopeLock lock(&pc_lock);
     static cwipc_point nullpoint {1.0f, 1.0f, 1.0f, 112, 54, 25, 0};   
     if (pc_points == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("UCwipcSource::GetPoint: pc_points is null"));
