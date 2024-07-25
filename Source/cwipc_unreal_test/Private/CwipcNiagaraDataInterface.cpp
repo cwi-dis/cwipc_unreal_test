@@ -7,9 +7,9 @@
 #include "CoreGlobals.h"
 
 // Define as empty to get debug prints
-#define DBG
+//#define DBG
 // Define is if(0) to not get debug prints
-// #define DBG if(0)
+#define DBG if(0)
 
 #define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
 
@@ -249,7 +249,7 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 	int32 numParticles = Context.GetNumInstances();
 	for (int32 i = 0; i < numParticles; ++i)
 	{
-		int32 idx = i % nPoints; // xxxjack SampleIndexParam.Get();
+		int32 idx = SampleIndexParam.Get();
 
 		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
 		if (pt == nullptr) {
@@ -290,7 +290,7 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 	int32 numParticles = Context.GetNumInstances();
 	for (int32 i = 0; i < numParticles; ++i)
 	{
-		int32 idx = i % nPoints; // xxjack SampleIndexParam.Get();
+		int32 idx = SampleIndexParam.Get();
 		cwipc_point* pt = CwipcPointCloudSourceAsset->GetPoint(idx);
 		if (pt == nullptr) {
 			return;
