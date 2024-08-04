@@ -14,6 +14,7 @@
 #define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
 
 
+static const FName InitializeSourceName("InitializeSource");
 static const FName GetNumberOfPointsName("GetNumberOfPoints");
 static const FName GetParticleSizeName("GetParticleSize");
 static const FName GetColorName("GetColor");
@@ -82,7 +83,19 @@ void UCwipcNiagaraDataInterface::PostEditChangeProperty(struct FPropertyChangedE
 // Returns the signature of all the functions avaialable in the data interface
 void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>& OutFunctions)
 {
+	{
+		// InitializeSource
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = InitializeSourceName;
+		Sig.bMemberFunction = true;
+		Sig.bRequiresContext = false;
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCloud in
+		
+		Sig.SetDescription(LOCTEXT("CwipcDataInterface_InitializeSource",
+			"Initializes and starts the point cloud source"));
 
+		OutFunctions.Add(Sig);
+	}
 	{
 		// GetNumberofPoints
 		FNiagaraFunctionSignature Sig;
@@ -209,6 +222,17 @@ bool UCwipcNiagaraDataInterface::Equals(const UNiagaraDataInterface* Other) cons
 	}
 
 	return false;
+}
+
+void UCwipcNiagaraDataInterface::InitializeSource(FVectorVMExternalFunctionContext& Context)
+{
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::InitializeSource() called"), *GetPathNameSafe(this));
+	if (CwipcPointCloudSourceAsset) {
+		CwipcPointCloudSourceAsset->InitializeSource();
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("UCwipcNiagaraDataInterface[%s]::InitializeSource: source == NULL"), *GetPathNameSafe(this));
+	}
 }
 
 void UCwipcNiagaraDataInterface::GetNumberOfPoints(FVectorVMExternalFunctionContext& Context)

@@ -105,8 +105,11 @@ bool UCwipcSource::InitializeSource()
 bool UCwipcSource::_CheckForNewPointCloudAvailable()
 {
     FScopeLock lock(&pc_lock);
-    // xxxjack this method *must* be protected with a lock at some point...
-    if (InitializeSource()) {
+    if (source == nullptr) {
+        DBG UE_LOG(LogTemp, Warning, TEXT("UcwipcSource[%s]: _CheckForNewPointCloudAvailable: source == NULL, Initializing"), *GetPathNameSafe(this));
+        InitializeSource();
+    }
+    if (true) {
         if (source->available(false))
         {
             // If a new pointcloud is available we get it.
