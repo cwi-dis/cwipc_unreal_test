@@ -172,6 +172,10 @@ void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunction
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetNumberOfPoints);
 	}
+	else if (BindingInfo.Name == InitializeSourceName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 0)
+	{
+		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::InitializeSource);
+	}
 	else if (BindingInfo.Name == GetParticleSizeName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetParticleSize);
