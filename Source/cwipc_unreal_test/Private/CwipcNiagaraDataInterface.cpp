@@ -7,9 +7,9 @@
 #include "CoreGlobals.h"
 
 // Define as empty to get debug prints
-//#define DBG
+#define DBG
 // Define is if(0) to not get debug prints
-#define DBG if(0)
+//#define DBG if(0)
 
 #define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
 
@@ -90,6 +90,7 @@ void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>&
 		Sig.bMemberFunction = true;
 		Sig.bRequiresContext = false;
 		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCloud in
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Success")));	// Success Out
 		
 		Sig.SetDescription(LOCTEXT("CwipcDataInterface_InitializeSource",
 			"Initializes and starts the point cloud source"));
@@ -172,7 +173,7 @@ void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunction
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetNumberOfPoints);
 	}
-	else if (BindingInfo.Name == InitializeSourceName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 0)
+	else if (BindingInfo.Name == InitializeSourceName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::InitializeSource);
 	}
@@ -231,8 +232,11 @@ bool UCwipcNiagaraDataInterface::Equals(const UNiagaraDataInterface* Other) cons
 void UCwipcNiagaraDataInterface::InitializeSource(FVectorVMExternalFunctionContext& Context)
 {
 	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::InitializeSource() called"), *GetPathNameSafe(this));
+	VectorVM::FExternalFuncRegisterHandler<bool> OutSuccess(Context);
 	if (CwipcPointCloudSourceAsset) {
-		CwipcPointCloudSourceAsset->InitializeSource();
+		bool success = CwipcPointCloudSourceAsset->InitializeSource();
+		*OutSuccess.GetDest() = success;
+		OutSuccess.Advance();
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("UCwipcNiagaraDataInterface[%s]::InitializeSource: source == NULL"), *GetPathNameSafe(this));
