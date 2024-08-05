@@ -106,8 +106,9 @@ bool UCwipcSource::_CheckForNewPointCloudAvailable()
 {
     FScopeLock lock(&pc_lock);
     if (source == nullptr) {
-        DBG UE_LOG(LogTemp, Warning, TEXT("UcwipcSource[%s]: _CheckForNewPointCloudAvailable: source == NULL, Initializing"), *GetPathNameSafe(this));
-        InitializeSource();
+        // xxxjack DBG UE_LOG(LogTemp, Warning, TEXT("UcwipcSource[%s]: _CheckForNewPointCloudAvailable: source == NULL, Initializing"), *GetPathNameSafe(this));
+        // xxxjack InitializeSource();
+        return 0;
     }
     if (true) {
         if (source->available(false))
@@ -165,7 +166,6 @@ int32 UCwipcSource::GetNumberOfPoints()
     if (!_CheckForNewPointCloudAvailable()) {
 		return 0;
 	}
- 
     int32 rv = pc_points_count;
     // const std::clock_t end = std::clock();
     //  
