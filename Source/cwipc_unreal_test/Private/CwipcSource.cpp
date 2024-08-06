@@ -84,6 +84,7 @@ bool UCwipcSource::InitializeSource()
         pc_points = nullptr;
         pc_points_count = 0;
     }
+    pc_first_timestamp = -1;
     char* errorMessage = nullptr;
     source = cwipc_synthetic(synthetic_wanted_fps, synthetic_wanted_pointcount, &errorMessage, CWIPC_API_VERSION);
     if (source == nullptr)
@@ -96,10 +97,16 @@ bool UCwipcSource::InitializeSource()
         {
             UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned null, but no error message"), *GetPathNameSafe(this));
         }
+        return false;
     }
     
     DBG UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created cwipc_synthetic() source"), *GetPathNameSafe(this));
     return true;
+}
+
+bool UCwipcSource::LockPointCloud()
+{
+    return _CheckForNewPointCloudAvailable();
 }
 
 bool UCwipcSource::_CheckForNewPointCloudAvailable()
@@ -108,54 +115,62 @@ bool UCwipcSource::_CheckForNewPointCloudAvailable()
     if (source == nullptr) {
         // xxxjack DBG UE_LOG(LogTemp, Warning, TEXT("UcwipcSource[%s]: _CheckForNewPointCloudAvailable: source == NULL, Initializing"), *GetPathNameSafe(this));
         // xxxjack InitializeSource();
-        return 0;
+        return false;
     }
-    if (true) {
-        if (source->available(false))
-        {
-            // If a new pointcloud is available we get it.
-            // First we release the old one.
-            if (pc != nullptr)
-            {
-                cwipc_free(pc);
-                pc = nullptr;
-            }
-            if (pc_points != nullptr)
-            {
-                free(pc_points);
-                pc_points = nullptr;
-                pc_points_count = 0;
-            }
-            pc = source->get();
-            if (pc == nullptr)
-            {
-                UE_LOG(LogTemp, Error, TEXT("UCwpicSource::_CheckForNewPointCloudAvailable: available returned true but no point cloud available"));
-                return false;
-            }
-            pc_points_count = pc->count();
-            int32 byte_count = pc->get_uncompressed_size();
-            pc_points = (cwipc_point*)malloc(byte_count);
-            if (pc_points == nullptr) {
-                UE_LOG(LogTemp, Error, TEXT("UCwpicSource::_CheckForNewPointCloudAvailable: malloc(%d) failed"), byte_count);
-                // For consistency we also free the pointcloud.
-                pc->free();
-                pc = nullptr;
-                pc_points_count = 0;
-                return false;
-            }
-            int32 copied_count = pc->copy_uncompressed(pc_points, byte_count);
-            if (pc_points_count != copied_count) {
-                UE_LOG(LogTemp, Error, TEXT("UCwpicSource::_CheckForNewPointCloudAvailable: copy_uncompressed copied wrong number of points. Wanted %d, got %d"), pc_points_count, copied_count);
-                // For consistency we also free the pointcloud.
-                pc->free();
-                pc = nullptr;
-                free(pc_points);
-                pc_points = nullptr;
-                pc_points_count = 0;
-                return false;
-            }
-        }
+
+    if (!source->available(false))
+    {
+        return false;
     }
+    // If a new pointcloud is available we get it.
+    // First we release the old one.
+    if (pc != nullptr)
+    {
+        cwipc_free(pc);
+        pc = nullptr;
+    }
+    if (pc_points != nullptr)
+    {
+        free(pc_points);
+        pc_points = nullptr;
+        pc_points_count = 0;
+    }
+    pc = source->get();
+    if (pc_first_timestamp < 0) {
+        pc_first_timestamp = pc->timestamp();
+    }
+    if (pc == nullptr)
+    {
+        UE_LOG(LogTemp, Error, TEXT("UCwpicSource::_CheckForNewPointCloudAvailable: available returned true but no point cloud available"));
+        return false;
+    }
+    pc_points_count = pc->count();
+    int32 byte_count = pc->get_uncompressed_size();
+    pc_points = (cwipc_point*)malloc(byte_count);
+    if (pc_points == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("UCwpicSource::_CheckForNewPointCloudAvailable: malloc(%d) failed"), byte_count);
+        // For consistency we also free the pointcloud.
+        pc->free();
+        pc = nullptr;
+        pc_points_count = 0;
+        return false;
+    }
+    int32 copied_count = pc->copy_uncompressed(pc_points, byte_count);
+    if (pc_points_count != copied_count) {
+        UE_LOG(LogTemp, Error, TEXT("UCwpicSource::_CheckForNewPointCloudAvailable: copy_uncompressed copied wrong number of points. Wanted %d, got %d"), pc_points_count, copied_count);
+        // For consistency we also free the pointcloud.
+        pc->free();
+        pc = nullptr;
+        free(pc_points);
+        pc_points = nullptr;
+        pc_points_count = 0;
+        return false;
+    }
+    return pc != nullptr;
+}
+
+bool UCwipcSource::_ValidPointCloudAvailable()
+{
     return pc != nullptr;
 }
 
@@ -163,7 +178,7 @@ int32 UCwipcSource::GetNumberOfPoints()
 {
     //  const std::clock_t start = std::clock();
     FScopeLock lock(&pc_lock);
-    if (!_CheckForNewPointCloudAvailable()) {
+    if (!_ValidPointCloudAvailable()) {
 		return 0;
 	}
     int32 rv = pc_points_count;
@@ -174,10 +189,19 @@ int32 UCwipcSource::GetNumberOfPoints()
 
 }
 
+int32 UCwipcSource::GetTimeStamp()
+{
+    FScopeLock lock(&pc_lock);
+    if (!_ValidPointCloudAvailable()) {
+        return 0;
+    }
+    return pc->timestamp() - pc_first_timestamp;
+}
+
 float UCwipcSource::GetParticleSize()
 {
     FScopeLock lock(&pc_lock);
-    if (!_CheckForNewPointCloudAvailable()) {
+    if (!_ValidPointCloudAvailable()) {
         return 0;
     }
     return pc->cellsize() * particle_size_factor;

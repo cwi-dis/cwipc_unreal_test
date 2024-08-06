@@ -26,6 +26,7 @@ protected:
 	FCriticalSection source_lock;
 
 	cwipc* pc;
+	int64_t pc_first_timestamp = -1;
 
 
 	cwipc_point* pc_points;
@@ -37,8 +38,13 @@ protected:
 	/// <summary>
 	/// Get a new point cloud into pc, if one is available.
 	/// </summary>
-	/// <returns>Returns true if a point cloud is available (no matter whether it is new or old)</returns>
+	/// <returns>Returns true if a new point cloud was gotten.</returns>
 	bool _CheckForNewPointCloudAvailable();
+
+	/// <summary>
+	/// Return true if we have a current point cloud. Does not get a new one.
+	/// </summary>
+	bool _ValidPointCloudAvailable();
 
 	/// <summary>
 	/// De-allocates everything in the right order.
@@ -57,8 +63,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Initialize source"))
 	bool InitializeSource();
 
+	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get a fresh point cloud if one is available"))
+	bool LockPointCloud();
+
 	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get number of points from current point cloud"))
 	int32 GetNumberOfPoints();
+
+	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get relative timestamp of current point cloud"))
+	int32 GetTimeStamp();
 
 	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get particle size for current point cloud"))
 	float GetParticleSize();

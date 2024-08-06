@@ -30,6 +30,7 @@ class CWIPC_UNREAL_TEST_API UCwipcNiagaraDataInterface : public UNiagaraDataInte
 
 protected:
 	virtual bool CopyToInternal(UNiagaraDataInterface* Destination) const override;
+	bool warnedAboutLockBeforeInitialize = false;
 
 public:
 
@@ -56,14 +57,24 @@ public:
 
 	//----------------------------------------------------------------------------
 	// EXPOSED FUNCTIONS
+	// Initializes the source. Call once, at the start of the Niagara system or Niagara emitter.
 	void InitializeSource(FVectorVMExternalFunctionContext& Context);
 
-	// Returns the float value at a given sample index in the point cloud
-	void GetNumberOfPoints(FVectorVMExternalFunctionContext& Context);
+	// Get the next point cloud, if available, and lock it.  Call during Emitter Update.
+	void LockPointCloud(FVectorVMExternalFunctionContext& Context);
+
+	// Returns the relative timestamp of the current point cloud. Call during Emitter Update, after LockPointCloud.
+	void GetTimeStamp(FVectorVMExternalFunctionContext& Context);
 	
+	// Returns the number of points in the current point cloud. Call during Emitter Update, after LockPointCloud.
+	void GetNumberOfPoints(FVectorVMExternalFunctionContext& Context);
+
+	// Returns the particle size for points in the current point cloud. Call during Emitter Update, after LockPointCloud.
 	void GetParticleSize(FVectorVMExternalFunctionContext& Context);
 
+	// Return the colors of a number of points.
 	void GetColor(FVectorVMExternalFunctionContext& Context);
 
+	// Return the positions of a number of points.
 	void GetPosition(FVectorVMExternalFunctionContext& Context);
 };

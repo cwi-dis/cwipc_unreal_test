@@ -17,6 +17,8 @@
 
 
 static const FName InitializeSourceName("InitializeSource");
+static const FName LockPointCloudName("LockPointCloud");
+static const FName GetTimeStampName("GetTimeStamp");
 static const FName GetNumberOfPointsName("GetNumberOfPoints");
 static const FName GetParticleSizeName("GetParticleSize");
 static const FName GetColorName("GetColor");
@@ -26,7 +28,7 @@ UCwipcNiagaraDataInterface::UCwipcNiagaraDataInterface(FObjectInitializer const&
 	: Super(ObjectInitializer)
 {
 	CwipcPointCloudSourceAsset = nullptr;
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::UCwipcNiagaraDataInterface() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(this));
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::UCwipcNiagaraDataInterface() called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 
 #if 0
 	Proxy.Reset(new FNDIMousePositionProxy());
@@ -59,6 +61,7 @@ void UCwipcNiagaraDataInterface::PostLoad()
 	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::PostLoad() on called, source=[%s]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
 	Super::PostLoad();
 	//CwipcPointCloudSourceAsset = nullptr;
+	warnedAboutLockBeforeInitialize = false;
 	MarkRenderDataDirty();
 }
 
@@ -77,6 +80,7 @@ void UCwipcNiagaraDataInterface::PostEditChangeProperty(struct FPropertyChangedE
 			MarkRenderDataDirty();
 		}
 	}
+	warnedAboutLockBeforeInitialize = false;
 
 }
 
@@ -92,10 +96,38 @@ void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>&
 		Sig.bMemberFunction = true;
 		Sig.bRequiresContext = false;
 		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCloud in
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Didrun")));	// Success Out
 		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Success")));	// Success Out
-		
+
 		Sig.SetDescription(LOCTEXT("CwipcDataInterface_InitializeSource",
 			"Initializes and starts the point cloud source"));
+
+		OutFunctions.Add(Sig);
+	}
+	{
+		// LockPointCloud
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = LockPointCloudName;
+		Sig.bMemberFunction = true;
+		Sig.bRequiresContext = false;
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCloud in
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetBoolDef(), TEXT("Value")));    	// True if a fresh point cloud was gathered
+
+		Sig.SetDescription(LOCTEXT("CwipcDataInterface_LockPointCloud",
+			"Gets a fresh point cloud if one is available"));
+
+		OutFunctions.Add(Sig);
+	} {
+		// GetTimeStamp
+		FNiagaraFunctionSignature Sig;
+		Sig.Name = GetTimeStampName;
+		Sig.bMemberFunction = true;
+		Sig.bRequiresContext = false;
+		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCloud in
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Value")));    	// Relative time stamp Out
+
+		Sig.SetDescription(LOCTEXT("CwipcDataInterface_GetTimeStamp",
+			"Returns the relative timestamp of the current point cloud"));
 
 		OutFunctions.Add(Sig);
 	}
@@ -171,11 +203,19 @@ void UCwipcNiagaraDataInterface::GetVMExternalFunction(const FVMExternalFunction
 	const FVMFunctionSpecifier* AttributeSpecifier = BindingInfo.FindSpecifier(NAME_Attribute);
 	bool bAttributeSpecifierRequiredButNotFound = false;
 
-	if (BindingInfo.Name == GetNumberOfPointsName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
+	if (BindingInfo.Name == LockPointCloudName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
+	{
+		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::LockPointCloud);
+	}
+	else if (BindingInfo.Name == GetTimeStampName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
+	{
+		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetTimeStamp);
+	}
+	else if (BindingInfo.Name == GetNumberOfPointsName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::GetNumberOfPoints);
 	}
-	else if (BindingInfo.Name == InitializeSourceName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 1)
+	else if (BindingInfo.Name == InitializeSourceName && BindingInfo.GetNumInputs() == 0 && BindingInfo.GetNumOutputs() == 2)
 	{
 		OutFunc = FVMExternalFunction::CreateUObject(this, &UCwipcNiagaraDataInterface::InitializeSource);
 	}
@@ -212,6 +252,7 @@ bool UCwipcNiagaraDataInterface::CopyToInternal(UNiagaraDataInterface* Destinati
 
 	CastedInterface->CwipcPointCloudSourceAsset = CwipcPointCloudSourceAsset;
 	CastedInterface->MarkRenderDataDirty();
+	CastedInterface->warnedAboutLockBeforeInitialize = false;
 
 	return true;
 }
@@ -233,16 +274,59 @@ bool UCwipcNiagaraDataInterface::Equals(const UNiagaraDataInterface* Other) cons
 
 void UCwipcNiagaraDataInterface::InitializeSource(FVectorVMExternalFunctionContext& Context)
 {
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::InitializeSource() called"), *GetPathNameSafe(this));
+	VectorVM::FExternalFuncRegisterHandler<bool> OutDidRun(Context);
 	VectorVM::FExternalFuncRegisterHandler<bool> OutSuccess(Context);
+	bool success = false;
 	if (CwipcPointCloudSourceAsset) {
-		bool success = CwipcPointCloudSourceAsset->InitializeSource();
-		*OutSuccess.GetDest() = success;
-		OutSuccess.Advance();
+		success = CwipcPointCloudSourceAsset->InitializeSource();
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("UCwipcNiagaraDataInterface[%s]::InitializeSource: source == NULL"), *GetPathNameSafe(this));
 	}
+	*OutDidRun.GetDest() = true;
+	OutDidRun.Advance();
+	*OutSuccess.GetDest() = success;
+	OutSuccess.Advance();
+	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[0x%p %s]::InitializeSource() returns %d"), (void*)this, *GetPathNameSafe(this), (int)success);
+
+}
+
+void UCwipcNiagaraDataInterface::LockPointCloud(FVectorVMExternalFunctionContext& Context)
+{
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::LockPointCloud() called"), *GetPathNameSafe(this));
+	VectorVM::FExternalFuncRegisterHandler<bool> IsFresh(Context);
+	if (CwipcPointCloudSourceAsset == nullptr) 
+	{
+		if (!warnedAboutLockBeforeInitialize) 
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UCwipcNiagaraDataInterface[0x%p %s]::LockPointCloud(): no source, InitializeSource() not called before?"), (void *)this, *GetPathNameSafe(this));
+			warnedAboutLockBeforeInitialize = true;
+		}
+	}
+	else 
+	{
+		// If we did warn before we should warn now that the condition is over
+		if (warnedAboutLockBeforeInitialize)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UCwipcNiagaraDataInterface[%s]::LockPointCloud(): InitializeSource apparently called, source=[%]"), *GetPathNameSafe(this), *GetPathNameSafe(CwipcPointCloudSourceAsset));
+			warnedAboutLockBeforeInitialize = false;
+		}
+	}
+	bool isFresh = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->LockPointCloud() : false;
+	*IsFresh.GetDest() = isFresh;
+	IsFresh.Advance();
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::LockPointCloud() returns %d"), *GetPathNameSafe(this), (int)isFresh);
+\
+}
+
+void UCwipcNiagaraDataInterface::GetTimeStamp(FVectorVMExternalFunctionContext& Context)
+{
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetTimeStamp() called"), *GetPathNameSafe(this));
+	VectorVM::FExternalFuncRegisterHandler<int32> OutTimeStamp(Context);
+	int32 timestamp = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetTimeStamp() : 0;
+	*OutTimeStamp.GetDest() = timestamp;
+	OutTimeStamp.Advance();
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetTimeStamp() returns %d"), *GetPathNameSafe(this), timestamp);
 }
 
 void UCwipcNiagaraDataInterface::GetNumberOfPoints(FVectorVMExternalFunctionContext& Context)
