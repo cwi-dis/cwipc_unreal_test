@@ -8,8 +8,10 @@
 
 // Define as empty to get debug prints
 #define DBG
+//#define DBGMORE
 // Define is if(0) to not get debug prints
 //#define DBG if(0)
+#define DBGMORE if(0)
 
 #define LOCTEXT_NAMESPACE "HoudiniNiagaraDataInterface"
 
@@ -245,27 +247,27 @@ void UCwipcNiagaraDataInterface::InitializeSource(FVectorVMExternalFunctionConte
 
 void UCwipcNiagaraDataInterface::GetNumberOfPoints(FVectorVMExternalFunctionContext& Context)
 {
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetNumberOfPoints() called"), *GetPathNameSafe(this));
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetNumberOfPoints() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncRegisterHandler<int32> OutNumPoints(Context);
 	int32 nPoints = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetNumberOfPoints() : 0;
 	*OutNumPoints.GetDest() = nPoints;
 	OutNumPoints.Advance();
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetNumberOfPoints() returns %d"), *GetPathNameSafe(this), nPoints);
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetNumberOfPoints() returns %d"), *GetPathNameSafe(this), nPoints);
 }
 
 void UCwipcNiagaraDataInterface::GetParticleSize(FVectorVMExternalFunctionContext& Context)
 {
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetParticleSize() called"), *GetPathNameSafe(this));
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetParticleSize() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncRegisterHandler<float> OutParticleSize(Context);
 	float particleSize = CwipcPointCloudSourceAsset ? CwipcPointCloudSourceAsset->GetParticleSize() : 0;
 	*OutParticleSize.GetDest() = particleSize;
 	OutParticleSize.Advance();
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetParticleSize() returns %f"), *GetPathNameSafe(this), particleSize);
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetParticleSize() returns %f"), *GetPathNameSafe(this), particleSize);
 }
 
 void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Context)
 {
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetColor() called"), *GetPathNameSafe(this));
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetColor() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncInputHandler<int32> SampleIndexParam(Context);
 
 	VectorVM::FExternalFuncRegisterHandler<float> OutSampleR(Context);
@@ -301,13 +303,13 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 		OutSampleA.Advance();
 		//UE_LOG(LogTemp, Warning, TEXT("GetColor(%d) -> (%f, %f, %f)"), idx, r, g, b);
 	}
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetColor() nParticles=%d, nPoints=%d"), *GetPathNameSafe(this), numParticles, nPoints);
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetColor() nParticles=%d, nPoints=%d"), *GetPathNameSafe(this), numParticles, nPoints);
 
 }
 
 void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& Context)
 {
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetPosition() called"), *GetPathNameSafe(this));
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetPosition() called"), *GetPathNameSafe(this));
 	VectorVM::FExternalFuncInputHandler<int32> SampleIndexParam(Context);
 
 	VectorVM::FExternalFuncRegisterHandler<float> OutSampleX(Context);
@@ -336,5 +338,5 @@ void UCwipcNiagaraDataInterface::GetPosition(FVectorVMExternalFunctionContext& C
 		OutSampleZ.Advance();
 		//UE_LOG(LogTemp, Warning, TEXT("GetPosition(%d) -> (%f, %f, %f)"), idx, pt->x, pt->y, pt->z);
 	}
-	DBG UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetPosition() nParticles=%d, nPoints=%d"), *GetPathNameSafe(this), numParticles, nPoints);
+	DBGMORE UE_LOG(LogTemp, Display, TEXT("UCwipcNiagaraDataInterface[%s]::GetPosition() nParticles=%d, nPoints=%d"), *GetPathNameSafe(this), numParticles, nPoints);
 }
