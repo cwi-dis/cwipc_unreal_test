@@ -13,7 +13,7 @@
 
 UCwipcSource::UCwipcSource(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
-      source(nullptr),
+      readerThread(nullptr),
       pc(nullptr),  
       pc_points(nullptr),
       pc_points_count(0)
@@ -27,10 +27,11 @@ void UCwipcSource::_CleanupEverything()
 {
     FScopeLock lock(&pc_lock);
     // xxxjack _CleanupEverything should also be called during destroction, after editing a source, etc.
-    if (source != nullptr) {
-        source->free();
-        source = nullptr;
+    if (readerThread) {
+        readerThread->Stop();
+        readerThread = nullptr;
     }
+    
     if (pc != nullptr) {
         pc->free();
         pc = nullptr;
@@ -68,12 +69,31 @@ void UCwipcSource::BeginDestroy()
     _CleanupEverything();
 }
 
+cwipc_source* UCwipcSource::_AllocateSource()
+{
+    char* errorMessage = nullptr;
+    cwipc_source* source = cwipc_synthetic(synthetic_wanted_fps, synthetic_wanted_pointcount, &errorMessage, CWIPC_API_VERSION);
+    if (source == nullptr)
+    {
+        if (errorMessage)
+        {
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned error: %s"), *GetPathNameSafe(this), errorMessage);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned null, but no error message"), *GetPathNameSafe(this));
+        }
+    }
+    return source;
+}
+
 bool UCwipcSource::InitializeSource()
 {
     FScopeLock lock(&source_lock);
-    if (source != nullptr) {
+    if (readerThread != nullptr) {
         return true;
     }
+    
     if (pc != nullptr) {
         pc->free();
         pc = nullptr;
@@ -85,22 +105,14 @@ bool UCwipcSource::InitializeSource()
         pc_points_count = 0;
     }
     pc_first_timestamp = -1;
-    char* errorMessage = nullptr;
-    source = cwipc_synthetic(synthetic_wanted_fps, synthetic_wanted_pointcount, &errorMessage, CWIPC_API_VERSION);
+    cwipc_source* source = _AllocateSource();
     if (source == nullptr)
     {
-        if (errorMessage)
-        {
-            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned error: %s"), *GetPathNameSafe(this), errorMessage);
-        }
-        else
-        {
-            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned null, but no error message"), *GetPathNameSafe(this));
-        }
+        // _AllocateSource will have given an error message
         return false;
     }
-    
-    DBG UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created cwipc_synthetic() source"), *GetPathNameSafe(this));
+    readerThread = new FCwipcReaderThread(source, readerQueue);
+    DBG UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created point cloud source"), *GetPathNameSafe(this));
     return true;
 }
 
@@ -112,14 +124,20 @@ bool UCwipcSource::LockPointCloud()
 bool UCwipcSource::_CheckForNewPointCloudAvailable()
 {
     FScopeLock lock(&pc_lock);
-    if (source == nullptr) {
+    if (readerThread == nullptr) {
         // xxxjack DBG UE_LOG(LogTemp, Warning, TEXT("UcwipcSource[%s]: _CheckForNewPointCloudAvailable: source == NULL, Initializing"), *GetPathNameSafe(this));
         // xxxjack InitializeSource();
         return false;
     }
 
-    if (!source->available(false))
+    if (readerQueue.IsEmpty())
     {
+        return false;
+    }
+    cwipc* new_pc = nullptr;
+    if (!readerQueue.Dequeue(new_pc)) 
+    {
+        // Should not happen?
         return false;
     }
     // If a new pointcloud is available we get it.
@@ -135,7 +153,7 @@ bool UCwipcSource::_CheckForNewPointCloudAvailable()
         pc_points = nullptr;
         pc_points_count = 0;
     }
-    pc = source->get();
+    pc = new_pc;
     if (pc_first_timestamp < 0) {
         pc_first_timestamp = pc->timestamp();
     }
@@ -222,4 +240,51 @@ cwipc_point* UCwipcSource::GetPoint(int32 index)
 		return &nullpoint;
 	}
     return &pc_points[index];
+}
+
+FCwipcReaderThread::FCwipcReaderThread(cwipc_source* _source, TCircularQueue<cwipc*>& _queue)
+:   source(_source),
+    queue(_queue)
+{
+    Thread = FRunnableThread::Create(this, TEXT("CwipcReaderThread"));
+}
+
+bool FCwipcReaderThread::Init()
+{
+    return true;
+}
+
+uint32 FCwipcReaderThread::Run()
+{
+    while (!bShutdown) {
+        if (source->eof()) {
+            return 1;
+        }
+        if (source->available(true)) {
+            cwipc* pc = source->get();
+            if (pc == nullptr) {
+                UE_LOG(LogTemp, Error, TEXT("FCwipcReaderThread::Run: get() returned NULL"));
+                return 2;
+            }
+            if (!queue.Enqueue(pc)) {
+                pc->free();
+                UE_LOG(LogTemp, Warning, TEXT("FCwipcReaderThread::Run: dropped point cloud, queue full"));
+            }
+        }
+    }
+    return 0;
+}
+
+void FCwipcReaderThread::Exit()
+{
+    source->free();
+}
+
+void FCwipcReaderThread::Stop()
+{
+    bShutdown = true;
+    cwipc* pc;
+    while (queue.Dequeue(pc)) {
+        pc->free();
+    }
 }

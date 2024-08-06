@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "cwipc_util/api.h"
+#include "Containers/CircularQueue.h"
 
 #include "CwipcSource.generated.h"
 
@@ -11,6 +12,21 @@ class UCwipcSource;
 class cwipc_source;
 class cwipc;
 struct cwipc_point;
+
+class FCwipcReaderThread : public FRunnable
+{
+public:
+	FCwipcReaderThread(cwipc_source* _source, TCircularQueue<cwipc *>& _queue);
+	virtual bool Init() override;
+	virtual uint32 Run() override;
+	virtual void Exit() override;
+	virtual void Stop() override;
+protected:
+	FRunnableThread* Thread;
+	cwipc_source* source;
+	TCircularQueue<cwipc*>& queue;
+	bool bShutdown = false;
+};
 /**
  * 
  */
@@ -22,7 +38,8 @@ class CWIPC_UNREAL_TEST_API UCwipcSource : public UObject
 	GENERATED_UCLASS_BODY()
 
 protected:
-	cwipc_source* source;
+	FCwipcReaderThread* readerThread;
+	TCircularQueue<cwipc*> readerQueue = TCircularQueue<cwipc*>(4);
 	FCriticalSection source_lock;
 
 	cwipc* pc;
@@ -34,7 +51,8 @@ protected:
 
 	FCriticalSection pc_lock;
 
-	
+	virtual cwipc_source* _AllocateSource();
+
 	/// <summary>
 	/// Get a new point cloud into pc, if one is available.
 	/// </summary>
