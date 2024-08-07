@@ -88,9 +88,22 @@ cwipc_source* UCwipcSource::_AllocateSource()
     return source;
 }
 
+bool UCwipcSource::_AllocateReaderThread()
+{
+    cwipc_source* source = _AllocateSource();
+    if (source == nullptr)
+    {
+        // _AllocateSource will have given an error message
+        return false;
+    }
+    readerThread = new FCwipcReaderThread(source, readerQueue);
+    DBG UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created point cloud source"), *GetPathNameSafe(this));
+    return true;
+}
+
 bool UCwipcSource::InitializeSource()
 {
-    FScopeLock lock(&source_lock);
+    FScopeLock lock(&thread_lock);
     if (readerThread != nullptr) {
         return true;
     }
@@ -106,15 +119,7 @@ bool UCwipcSource::InitializeSource()
         pc_points_count = 0;
     }
     pc_first_timestamp = -1;
-    cwipc_source* source = _AllocateSource();
-    if (source == nullptr)
-    {
-        // _AllocateSource will have given an error message
-        return false;
-    }
-    readerThread = new FCwipcReaderThread(source, readerQueue);
-    DBG UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created point cloud source"), *GetPathNameSafe(this));
-    return true;
+    return _AllocateReaderThread();
 }
 
 bool UCwipcSource::LockPointCloud()
@@ -278,7 +283,9 @@ uint32 FCwipcReaderThread::Run()
 
 void FCwipcReaderThread::Exit()
 {
-    source->free();
+    if (source) {
+        source->free();
+    }
 }
 
 void FCwipcReaderThread::Stop()

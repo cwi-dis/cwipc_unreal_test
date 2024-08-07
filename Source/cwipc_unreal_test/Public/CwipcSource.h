@@ -40,18 +40,18 @@ class CWIPC_UNREAL_TEST_API UCwipcSource : public UObject
 protected:
 	FCwipcReaderThread* readerThread;
 	TCircularQueue<cwipc*> readerQueue = TCircularQueue<cwipc*>(4);
-	FCriticalSection source_lock;
+	FCriticalSection thread_lock;
 
 	cwipc* pc;
 	int64_t pc_first_timestamp = -1;
-
-
 	cwipc_point* pc_points;
 	int pc_points_count;
-
 	FCriticalSection pc_lock;
 
+	// Override this in a subclass if your subclass reads point clouds from a cwipc_source.
 	virtual cwipc_source* _AllocateSource();
+	// Alternatively, override this if your subclass does more in its thread, like reading files or running decompressors.
+	virtual bool _AllocateReaderThread();
 
 	/// <summary>
 	/// Get a new point cloud into pc, if one is available.
