@@ -27,6 +27,9 @@ public class cwipc_unreal_test : ModuleRules
         PublicAdditionalLibraries.AddRange(
             new string[] {
                     Path.Combine(api_location, "lib", "cwipc_util.lib"),
+                    Path.Combine(api_location, "lib", "cwipc_kinect.lib"),
+                    Path.Combine(api_location, "lib", "cwipc_codec.lib"),
+                    Path.Combine(api_location, "lib", "cwipc_realsense2.lib"),
             });
     }
 }
