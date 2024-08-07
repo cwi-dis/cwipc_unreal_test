@@ -77,7 +77,8 @@ cwipc_source* UCwipcSource::_AllocateSource()
     {
         if (errorMessage)
         {
-            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned error: %s"), *GetPathNameSafe(this), errorMessage);
+            FString message(errorMessage);
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned error: %s"), *GetPathNameSafe(this), *message);
         }
         else
         {
