@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Factories/Factory.h"
 #include "CwipcSource.h"
+#include "CwipcSourceSynthetic.h"
+#include "CwipcSourceCamera.h"
 #include "CwipcSourceFactory.generated.h"
 
 /**
@@ -17,6 +19,34 @@ class CWIPC_UNREAL_TESTEDITOR_API UCwipcSourceFactoryNew : public UFactory
 
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
 	
+	virtual bool ShouldShowInNewMenu() const override;
+
+	virtual uint32 GetMenuCategories() const override;
+
+	virtual FText GetDisplayName() const override;
+};
+
+UCLASS()
+class CWIPC_UNREAL_TESTEDITOR_API UCwipcSourceSyntheticFactoryNew : public UFactory
+{
+	GENERATED_UCLASS_BODY()
+
+	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
+
+	virtual bool ShouldShowInNewMenu() const override;
+
+	virtual uint32 GetMenuCategories() const override;
+
+	virtual FText GetDisplayName() const override;
+};
+
+UCLASS()
+class CWIPC_UNREAL_TESTEDITOR_API UCwipcSourceCameraFactoryNew : public UFactory
+{
+	GENERATED_UCLASS_BODY()
+
+	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
+
 	virtual bool ShouldShowInNewMenu() const override;
 
 	virtual uint32 GetMenuCategories() const override;
