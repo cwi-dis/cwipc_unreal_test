@@ -152,7 +152,7 @@ void UCwipcNiagaraDataInterface::GetFunctions(TArray<FNiagaraFunctionSignature>&
 		Sig.bMemberFunction = true;
 		Sig.bRequiresContext = false;
 		Sig.Inputs.Add(FNiagaraVariable(FNiagaraTypeDefinition(GetClass()), TEXT("PointCloud")));	// PointCloud in
-		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetIntDef(), TEXT("Value")));    	// Number of points Out
+		Sig.Outputs.Add(FNiagaraVariable(FNiagaraTypeDefinition::GetFloatDef(), TEXT("Value")));    	// Number of points Out
 
 		Sig.SetDescription(LOCTEXT("CwipcDataInterface_GetParticleSize",
 			"Returns the particle size of points in the point cloud"));
@@ -380,6 +380,7 @@ void UCwipcNiagaraDataInterface::GetColor(FVectorVMExternalFunctionContext& Cont
 		*OutSampleR.GetDest() = r;
 		*OutSampleG.GetDest() = g;
 		*OutSampleB.GetDest() = b;
+		*OutSampleA.GetDest() = 0.5;
 		SampleIndexParam.Advance();
 		OutSampleR.Advance();
 		OutSampleG.Advance();
