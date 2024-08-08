@@ -41,27 +41,27 @@ void FCwipcFileReaderThread::StartThread() {
     Thread = FRunnableThread::Create(this, TEXT("CwipcFileReaderThread"));
 }
 
-cwipc* FCwipcFileReaderThread::ReadNextPointCloud()
+cwipc* FCwipcFileReaderThread::_ReadNextPointCloud(std::string filename)
 {
-    std::string filename_s(nextFileName);
-    std::filesystem::path filename(filename_s);
-    std::filesystem::path ext = filename.extension();
-    const char* filename_c = filename_s.c_str();
+    std::filesystem::path filename_p(filename);
+    std::filesystem::path ext = filename_p.extension();
+    const char* filename_c = filename.c_str();
     cwipc* pc = nullptr;
     char* errorMessage = nullptr;
-    if (ext == std::filesystem::path(".ply")) {
-        UE_LOG(LogTemp, Display, TEXT("xxxjack should read ply"));
+    switch (fileType) {
+    case CwipcFileType::ply:
+        UE_LOG(LogTemp, Display, TEXT("CwipcFileReaderThread: read ply from %s"), *FString(filename_c));
         pc = cwipc_read(filename_c, 424242, &errorMessage, CWIPC_API_VERSION);
-    }
-    else if (ext == std::filesystem::path(".cwipcdump")) {
-        UE_LOG(LogTemp, Display, TEXT("xxxjack should read cwipcdump"));
+        break;
+    case CwipcFileType::cwipcdump:
+        UE_LOG(LogTemp, Display, TEXT("CwipcFileReaderThread: read cwipcdump from %s"), *FString(filename_c));
         pc = cwipc_read_debugdump(filename_c, &errorMessage, CWIPC_API_VERSION);
-    }
-    else if (ext == std::filesystem::path(".cwicpc")) {
-        UE_LOG(LogTemp, Display, TEXT("xxxjack should read cwicpc"));
-    }
-    else {
-        UE_LOG(LogTemp, Error, TEXT("FCwipcFileReaderThread: Unknown extension '%s' in '%s' "), *FString(ext.c_str()), *FString(filename.c_str()));
+        break;
+    case CwipcFileType::cwicpc:
+        UE_LOG(LogTemp, Display, TEXT("CwipcFileReaderThread: read cwicpc from %s"), *FString(filename_c));
+        break;
+    default:
+        // Don't print error, has been done before.
         return nullptr;
     }
     if (pc == nullptr) {
@@ -77,13 +77,73 @@ cwipc* FCwipcFileReaderThread::ReadNextPointCloud()
     return pc;
 }
 
+void FCwipcFileReaderThread::_Initialize()
+{
+    std::filesystem::path pathname_p(pathName);
+    fileType = CwipcFileType::unknown;
+    if (std::filesystem::is_directory(pathname_p))
+    {
+        for (auto direntry : std::filesystem::directory_iterator(pathname_p))
+        {
+            std::string entry_s(direntry.path().string());
+            CwipcFileType thisType = _GetFileType(entry_s);
+            if (thisType == CwipcFileType::unknown) continue;
+            fileType = fileType | thisType;
+            if (thisType != CwipcFileType::unknown) {
+                allFileNames.push_back(entry_s);
+            }
+        }
+    }
+    else
+    {
+        allFileNames.push_back(pathName);
+        fileType = _GetFileType(pathName);
+    }
+    if (fileType == CwipcFileType::unknown)
+    {
+        UE_LOG(LogTemp, Error, TEXT("FCwipcFileReaderThread: No supported file types in %s"), *FString(pathName.c_str()));
+    }
+    else if (fileType != CwipcFileType::ply && fileType != CwipcFileType::cwipcdump && fileType != CwipcFileType::cwicpc)
+    {
+        UE_LOG(LogTemp, Error, TEXT("FCwipcFileReaderThread: Multiple file types in %s"), *FString(pathName.c_str()));
+
+    }
+}
+
+CwipcFileType FCwipcFileReaderThread::_GetFileType(std::string filename)
+{
+    std::filesystem::path filename_p(filename);
+    std::filesystem::path ext = filename_p.extension();
+    if (ext == std::filesystem::path(".ply")) {
+        return CwipcFileType::ply;
+    }
+    else if (ext == std::filesystem::path(".cwipcdump")) {
+        return CwipcFileType::cwipcdump;
+    }
+    else if (ext == std::filesystem::path(".cwicpc")) {
+        return CwipcFileType::cwicpc;
+    }
+    return CwipcFileType::unknown;
+}
+
 uint32 FCwipcFileReaderThread::Run()
 {
-    nextFileName = pathName;
-    cwipc* pc = ReadNextPointCloud();
-    if (pc != nullptr)
-    {
-        queue.Enqueue(pc);
+    _Initialize();
+    for (auto fileName : allFileNames) {
+
+        cwipc* pc = _ReadNextPointCloud(fileName);
+        if (pc != nullptr)
+        {
+            while (queue.IsFull())
+            {
+                if (bShutdown) {
+                    return 0;
+                }
+                FPlatformProcess::Sleep(0.033);
+            }
+            queue.Enqueue(pc);
+        }
+        if (bShutdown) return 0;
     }
 #if 0
     while (!bShutdown) {
