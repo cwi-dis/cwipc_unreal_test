@@ -2,18 +2,32 @@
 
 
 #include "CwipcSourceCamera.h"
+#include "cwipc_realsense2/api.h"
+#undef cwipc_realsense_api_h
 #include "cwipc_kinect/api.h"
+#include <filesystem>
 
 cwipc_source* UCwipcSourceCamera::_AllocateSource()
 {
     char* errorMessage = nullptr;
-    char* configFileName = nullptr;
+    std::string configFilename_s;
+    const char* configFileName = nullptr;
     if(!ConfigFileName.IsEmpty())
 	{
-		configFileName = TCHAR_TO_ANSI(*ConfigFileName);
+		std::filesystem::path partial(TCHAR_TO_UTF8(*ConfigFileName));
+        if (partial.is_relative())
+        {
+            FString projectDir = FPaths::ProjectDir();
+            std::filesystem::path base(TCHAR_TO_UTF8(*projectDir));
+            partial = base / partial;
+        }
+        std::filesystem::path abs = std::filesystem::absolute(partial);
+        configFilename_s = abs.string();
+        configFileName = configFilename_s.c_str();
 	}
 
     cwipc_kinect(nullptr, nullptr, 0); // Force loading of kinect dlls
+    cwipc_realsense2(nullptr, nullptr, 0);
     cwipc_source* source = cwipc_capturer(configFileName, &errorMessage, CWIPC_API_VERSION);
     if (source == nullptr)
     {
