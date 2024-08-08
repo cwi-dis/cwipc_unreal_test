@@ -2,19 +2,25 @@
 
 #pragma once
 
+#include <string>
+
 #include "CoreMinimal.h"
 #include "CwipcSource.h"
 #include "CwipcSourceFiles.generated.h"
 
+class cwipc;
 
 class FCwipcFileReaderThread : public FCwipcReaderThread
 {
 public:
 	FCwipcFileReaderThread(FString _pathName, TCircularQueue<cwipc*>& _queue);
+	virtual void StartThread() override;
 	virtual uint32 Run() override;
 	virtual void Exit() override;
+	virtual cwipc* ReadNextPointCloud();
 protected:
-	FString pathName;
+	std::string pathName;
+	std::string nextFileName;
 };
 /**
  * 

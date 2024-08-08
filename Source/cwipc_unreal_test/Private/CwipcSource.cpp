@@ -77,8 +77,7 @@ cwipc_source* UCwipcSource::_AllocateSource()
     {
         if (errorMessage)
         {
-            FString message(errorMessage);
-            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned error: %s"), *GetPathNameSafe(this), *message);
+            UE_LOG(LogTemp, Error, TEXT("UCwpicSource[%s]: cwipc_synthetic() returned error: %s"), *GetPathNameSafe(this), *FString(errorMessage));
         }
         else
         {
@@ -97,6 +96,7 @@ bool UCwipcSource::_AllocateReaderThread()
         return false;
     }
     readerThread = new FCwipcReaderThread(source, readerQueue);
+    readerThread->StartThread();
     DBG UE_LOG(LogTemp, Display, TEXT("UcwipcSource[%s]: created point cloud source"), *GetPathNameSafe(this));
     return true;
 }
@@ -252,6 +252,9 @@ FCwipcReaderThread::FCwipcReaderThread(cwipc_source* _source, TCircularQueue<cwi
 :   source(_source),
     queue(_queue)
 {
+}
+
+void FCwipcReaderThread::StartThread() {
     Thread = FRunnableThread::Create(this, TEXT("CwipcReaderThread"));
 }
 
@@ -262,7 +265,7 @@ bool FCwipcReaderThread::Init()
 
 uint32 FCwipcReaderThread::Run()
 {
-    while (!bShutdown) {
+    while (!bShutdown && source != nullptr) {
         if (source->eof()) {
             return 1;
         }

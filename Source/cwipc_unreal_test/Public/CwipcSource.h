@@ -17,6 +17,7 @@ class FCwipcReaderThread : public FRunnable
 {
 public:
 	FCwipcReaderThread(cwipc_source* _source, TCircularQueue<cwipc *>& _queue);
+	virtual void StartThread();
 	virtual bool Init() override;
 	virtual uint32 Run() override;
 	virtual void Exit() override;
