@@ -228,6 +228,10 @@ float UCwipcSource::GetParticleSize()
     if (!_ValidPointCloudAvailable()) {
         return 0;
     }
+    float cellsize = pc->cellsize();
+    if (cellsize == 0) {
+        cellsize = defaultCellSize;
+    }
     return pc->cellsize() * particle_size_factor;
 }
 

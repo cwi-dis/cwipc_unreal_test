@@ -94,6 +94,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cwipc Niagara", meta = (DisplayName = "Get particle size for current point cloud"))
 	float GetParticleSize();
 
+	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Point size to use when unknown"))
+	float defaultCellSize = 0.001;
+	
 	UPROPERTY(EditAnywhere, Category = "Cwipc Niagara", meta = (DisplayName = "Factor to convert point size to particle size"))
 	float particle_size_factor = 1.0;
 
